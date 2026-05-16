@@ -1,9 +1,7 @@
 [gd_scene format=4 uid="uid://gm82risvtsu2"]
 
-[ext_resource type="Texture2D" uid="uid://c3fb0wtt2ufg4" path="res://grass.png" id="2_kdubu"]
-[ext_resource type="Texture2D" uid="uid://dmwueei7cyc3u" path="res://grass-removebg-preview.png" id="3_d21ai"]
 [ext_resource type="Texture2D" uid="uid://ceeuicwtbgctn" path="res://kenney_isometric-miniature-farm/Isometric/dirtFarmland_S.png" id="3_rj586"]
-[ext_resource type="Texture2D" uid="uid://bjeqjipxwj7b6" path="res://grass-removebg-preview_80.png" id="4_rj586"]
+[ext_resource type="Texture2D" uid="uid://bfvs5sipbcnuk" path="res://maingrass.png" id="4_kdubu"]
 [ext_resource type="Script" uid="uid://bxil3axowh545" path="res://character_body_2d.gd" id="5_kdubu"]
 [ext_resource type="Texture2D" uid="uid://dfr8441fu53yf" path="res://pngtree-pixelated-robot-with-different-colors-vector-png-image_7212078.png" id="6_hqns4"]
 
@@ -14,43 +12,24 @@ texture_region_size = Vector2i(256, 170)
 0:2/0/texture_origin = Vector2i(0, 14)
 0:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -63, -126.5, 0, 0, 63, 126.5, 0)
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4d7sh"]
-texture = ExtResource("2_kdubu")
-texture_region_size = Vector2i(1000, 1000)
-0:0/0 = 0
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ir8iy"]
-texture = ExtResource("3_d21ai")
-texture_region_size = Vector2i(500, 500)
-0:0/0 = 0
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hqns4"]
-texture = ExtResource("4_rj586")
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_d21ai"]
+texture = ExtResource("4_kdubu")
+margins = Vector2i(37, 20)
 texture_region_size = Vector2i(128, 128)
 0:0/0 = 0
-1:0/0 = 0
-2:0/0 = 0
-0:1/0 = 0
-1:1/0 = 0
-2:1/0 = 0
-0:2/0 = 0
-1:2/0 = 0
-2:2/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_ta5nu"]
 tile_size = Vector2i(128, 128)
 physics_layer_0/collision_layer = 1
 sources/2 = SubResource("TileSetAtlasSource_nr8wp")
-sources/5 = SubResource("TileSetAtlasSource_4d7sh")
-sources/6 = SubResource("TileSetAtlasSource_ir8iy")
-sources/7 = SubResource("TileSetAtlasSource_hqns4")
+sources/9 = SubResource("TileSetAtlasSource_d21ai")
 
 [node name="Node2D" type="Node2D" unique_id=1473681432]
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=667749862]
 y_sort_enabled = true
-position = Vector2(-32, -378)
-tile_map_data = PackedByteArray("AAADAAQABwABAAEAAAADAAUABwABAAEAAAADAAYABwABAAEAAAAEAAQABwABAAEAAAAEAAUABwABAAEAAAAEAAYABwABAAEAAAAFAAQABwABAAEAAAAFAAUABwABAAEAAAAFAAYABwABAAEAAAA=")
+position = Vector2(-42, -378)
+tile_map_data = PackedByteArray("AAADAAQACQAAAAAAAAADAAUACQAAAAAAAAADAAYACQAAAAAAAAAEAAQACQAAAAAAAAAEAAUACQAAAAAAAAAEAAYACQAAAAAAAAAFAAQACQAAAAAAAAAFAAUACQAAAAAAAAAFAAYACQAAAAAAAAA=")
 tile_set = SubResource("TileSet_ta5nu")
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=2104660282]
