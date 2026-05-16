@@ -1,0 +1,21 @@
+[gd_scene format=4 uid="uid://3it4p4djovj5"]
+
+[ext_resource type="Texture2D" uid="uid://dg5xp3p61of86" path="res://kenney_isometric-miniature-farm/Isometric/dirt_N.png" id="1_uyyls"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nt5p1"]
+texture = ExtResource("1_uyyls")
+texture_region_size = Vector2i(256, 170)
+0:2/0 = 0
+0:2/0/texture_origin = Vector2i(0, 14)
+
+[sub_resource type="TileSet" id="TileSet_rrnwo"]
+tile_shape = 1
+tile_size = Vector2i(253, 128)
+sources/0 = SubResource("TileSetAtlasSource_nt5p1")
+
+[node name="Node2D" type="Node2D" unique_id=1289787941]
+
+[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1218375161]
+y_sort_enabled = true
+tile_map_data = PackedByteArray("AAABAAMAAAAAAAIAAAACAAQAAAAAAAIAAAABAAQAAAAAAAIAAAABAAUAAAAAAAIAAAACAAYAAAAAAAIAAAACAAUAAAAAAAIAAAAAAAUAAAAAAAIAAAABAAYAAAAAAAIAAAABAAcAAAAAAAIAAAA=")
+tile_set = SubResource("TileSet_rrnwo")
