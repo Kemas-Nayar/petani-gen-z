@@ -9,6 +9,9 @@
 [ext_resource type="Script" uid="uid://bxil3axowh545" path="res://character_body_2d.gd" id="5_kdubu"]
 [ext_resource type="Texture2D" uid="uid://dfr8441fu53yf" path="res://pngtree-pixelated-robot-with-different-colors-vector-png-image_7212078.png" id="6_hqns4"]
 [ext_resource type="Script" uid="uid://d1kuhn3um7ikr" path="res://tile_visual_manager.gd" id="6_kdubu"]
+[ext_resource type="Script" uid="uid://b04xkhcpevwrm" path="res://hud.gd" id="10_ir8iy"]
+[ext_resource type="Script" uid="uid://cyoh2rb3kp8vm" path="res://block_palette.gd" id="11_x0ka3"]
+[ext_resource type="Script" uid="uid://7wcy7o6b8k6w" path="res://block_sequence.gd" id="12_0h7mo"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_kdubu"]
 texture = ExtResource("1_q6r6c")
@@ -78,3 +81,97 @@ texture = ExtResource("6_hqns4")
 
 [node name="TileVisualManager" type="Node2D" parent="." unique_id=1935115460]
 script = ExtResource("6_kdubu")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=717033751]
+script = ExtResource("10_ir8iy")
+
+[node name="CenterBottom" type="Control" parent="HUD" unique_id=1391344646]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PanelContainer" type="PanelContainer" parent="HUD/CenterBottom" unique_id=2004464258]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/CenterBottom/PanelContainer" unique_id=728751358]
+layout_mode = 2
+
+[node name="TimerLabel" type="Label" parent="HUD/CenterBottom/PanelContainer/MarginContainer" unique_id=162720260]
+layout_mode = 2
+
+[node name="BlockUI" type="CanvasLayer" parent="." unique_id=568883789]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="BlockUI" unique_id=267138880]
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BlockPalette" type="PanelContainer" parent="BlockUI/HBoxContainer" unique_id=74384847]
+layout_mode = 2
+script = ExtResource("11_x0ka3")
+
+[node name="MarginContainer" type="MarginContainer" parent="BlockUI/HBoxContainer/BlockPalette" unique_id=1006243797]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer" unique_id=1074028377]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox" unique_id=1500426987]
+layout_mode = 2
+text = "Blok Tersedia"
+
+[node name="MoveSection" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox" unique_id=1029934587]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/MoveSection" unique_id=975406704]
+layout_mode = 2
+text = "🔵 Gerak"
+
+[node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/MoveSection" unique_id=983497997]
+layout_mode = 2
+
+[node name="ActionSection" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox" unique_id=1398234653]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/ActionSection" unique_id=1842035867]
+layout_mode = 2
+text = "🟢 Aksi"
+
+[node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/ActionSection" unique_id=1271781648]
+layout_mode = 2
+
+[node name="BlockSequence" type="PanelContainer" parent="BlockUI/HBoxContainer" unique_id=1157670654]
+layout_mode = 2
+script = ExtResource("12_0h7mo")
+
+[node name="MarginContainer" type="MarginContainer" parent="BlockUI/HBoxContainer/BlockSequence" unique_id=651272657]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer" unique_id=695209406]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=1765524022]
+layout_mode = 2
+text = "Urutan Blok"
+
+[node name="SlotContainer" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=1431481910]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=626743409]
+layout_mode = 2
+
+[node name="RunButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=315331510]
+layout_mode = 2
+text = "▶ Jalankan"

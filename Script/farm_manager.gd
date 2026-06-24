@@ -3,7 +3,7 @@ extends Node
 # Add this as an Autoload in Project > Project Settings > Autoload
 # Name it "FarmManager"
 
-const GROWTH_TIME: float = 10.0  # Seconds for watered crop to become harvestable
+const GROWTH_TIME: float = 2.0  # Seconds for watered crop to become harvestable
 
 var tiles: Dictionary = {}  # Vector2i -> FarmTile
 
