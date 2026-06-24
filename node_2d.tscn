@@ -112,18 +112,25 @@ layout_mode = 2
 [node name="BlockUI" type="CanvasLayer" parent="." unique_id=568883789]
 
 [node name="HBoxContainer" type="HBoxContainer" parent="BlockUI" unique_id=267138880]
-anchors_preset = -1
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -220.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
 
 [node name="BlockPalette" type="PanelContainer" parent="BlockUI/HBoxContainer" unique_id=74384847]
 layout_mode = 2
+size_flags_vertical = 3
 script = ExtResource("11_x0ka3")
 
 [node name="MarginContainer" type="MarginContainer" parent="BlockUI/HBoxContainer/BlockPalette" unique_id=1006243797]
 layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="VBox" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer" unique_id=1074028377]
 layout_mode = 2
@@ -154,13 +161,20 @@ layout_mode = 2
 
 [node name="BlockSequence" type="PanelContainer" parent="BlockUI/HBoxContainer" unique_id=1157670654]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("12_0h7mo")
 
 [node name="MarginContainer" type="MarginContainer" parent="BlockUI/HBoxContainer/BlockSequence" unique_id=651272657]
 layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="VBox" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer" unique_id=695209406]
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=1765524022]
 layout_mode = 2
@@ -168,6 +182,7 @@ text = "Urutan Blok"
 
 [node name="SlotContainer" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=1431481910]
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="StatusLabel" type="Label" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=626743409]
 layout_mode = 2
