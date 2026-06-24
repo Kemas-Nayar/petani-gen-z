@@ -31,6 +31,7 @@ func setup(def: BlockDefinition, in_sequence: bool = false) -> void:
 	style.border_width_bottom = 2
 	style.border_color = def.color.darkened(0.3)
 	add_theme_stylebox_override("panel", style)
+	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var label = Label.new()
 	label.text = def.label

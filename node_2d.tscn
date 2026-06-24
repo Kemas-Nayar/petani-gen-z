@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://b04xkhcpevwrm" path="res://hud.gd" id="10_ir8iy"]
 [ext_resource type="Script" uid="uid://cyoh2rb3kp8vm" path="res://block_palette.gd" id="11_x0ka3"]
 [ext_resource type="Script" uid="uid://7wcy7o6b8k6w" path="res://block_sequence.gd" id="12_0h7mo"]
+[ext_resource type="Script" path="res://block_ui_layer.gd" id="13_layer"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_kdubu"]
 texture = ExtResource("1_q6r6c")
@@ -110,15 +111,21 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="BlockUI" type="CanvasLayer" parent="." unique_id=568883789]
+script = ExtResource("13_layer")
+
+[node name="ToggleButton" type="Button" parent="BlockUI"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 128.0
+offset_bottom = 36.0
+text = "◀ Sembunyikan"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="BlockUI" unique_id=267138880]
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
+anchors_preset = 9
 anchor_bottom = 1.0
-offset_top = -220.0
-grow_horizontal = 2
-grow_vertical = 0
+offset_top = 44.0
+offset_right = 360.0
+grow_vertical = 2
 
 [node name="BlockPalette" type="PanelContainer" parent="BlockUI/HBoxContainer" unique_id=74384847]
 layout_mode = 2
@@ -187,6 +194,15 @@ size_flags_vertical = 3
 [node name="StatusLabel" type="Label" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=626743409]
 layout_mode = 2
 
-[node name="RunButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=315331510]
+[node name="ButtonRow" type="HBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RunButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox/ButtonRow" unique_id=315331510]
+layout_mode = 2
+size_flags_horizontal = 3
 text = "▶ Jalankan"
+
+[node name="ClearButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox/ButtonRow"]
+layout_mode = 2
+text = "Hapus Semua"
