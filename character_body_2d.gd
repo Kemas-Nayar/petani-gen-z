@@ -6,6 +6,7 @@ var is_moving: bool = false
 var grid_pos: Vector2i = Vector2i(0, 0)
 
 signal move_finished  # dipakai oleh BlockSequence untuk await pergerakan selesai
+signal move_blocked  # dipancarkan saat robot mencoba jalan ke luar grid
 
 func _ready():
 	var used_cells = tile_map_layer.get_used_cells()
@@ -60,6 +61,8 @@ func move_to_grid(direction: Vector2i) -> void:
 	var target_grid_pos = grid_pos + direction
 	var tile_data = tile_map_layer.get_cell_tile_data(target_grid_pos)
 	if tile_data == null:
+		move_blocked.emit()
+		_shake()
 		move_finished.emit()  # tetap emit agar await di BlockSequence tidak hang
 		return
 
@@ -75,3 +78,9 @@ func move_to_grid(direction: Vector2i) -> void:
 		is_moving = false
 		move_finished.emit()
 	)
+func _shake() -> void:
+	var original_pos = position
+	var tween = create_tween()
+	tween.tween_property(self, "position", original_pos + Vector2(6, 0), 0.05)
+	tween.tween_property(self, "position", original_pos - Vector2(6, 0), 0.05)
+	tween.tween_property(self, "position", original_pos, 0.05)

@@ -19,6 +19,7 @@ var is_running: bool = false
 func _ready():
 	run_button.pressed.connect(_on_run_pressed)
 	clear_button.pressed.connect(_on_clear_pressed)
+	character.move_blocked.connect(_on_move_blocked)
 	_refresh_slots()
 
 # ── Drop handling ──────────────────────────────────────────────────────────
@@ -194,6 +195,9 @@ func _on_clear_pressed() -> void:
 	status_label.text = ""
 
 # ── Helper ────────────────────────────────────────────────────────────────
+
+func _on_move_blocked() -> void:
+	status_label.text = "🚫 Robot terhalang, tidak bisa lewat!"
 
 func _get_insert_index(at_position: Vector2) -> int:
 	var pos_in_container := slot_container.get_global_transform().affine_inverse() * (get_global_transform() * at_position)
