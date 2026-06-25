@@ -11,12 +11,13 @@ config_version=5
 [application]
 
 config/name="Petani Gen Z"
-run/main_scene="res://node_2d.tscn"
+run/main_scene="res://main_menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
+SettingsManager="*res://settings_manager.gd"
 FarmManager="*uid://dqun7tm1gnmjq"
 LevelManager="*uid://b7j1mlevelmgr001"
 

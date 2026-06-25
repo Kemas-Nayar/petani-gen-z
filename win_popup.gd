@@ -12,20 +12,24 @@ func _ready() -> void:
 	LevelManager.level_won.connect(_on_level_won)
 	next_button.pressed.connect(_on_next_pressed)
 	retry_button.pressed.connect(_on_retry_pressed)
+	
+	# Menerapkan lokalisasi untuk tombol
+	next_button.text = tr("Next Level ▶")
+	retry_button.text = tr("Retry 🔄")
 
 func _on_level_won(level_id: int) -> void:
 	var level := LevelData.get_level(level_id)
 	var is_last := level_id >= LevelData.get_all().size()
 
-	title_label.text = "🎉 Level Selesai!\n%s" % level.title
-	stats_label.text = "Panen: %d tanaman\nLangkah: %d blok dieksekusi" % [
+	title_label.text = tr("🎉 Level Complete!\n%s") % tr(level.title)
+	stats_label.text = tr("Harvested: %d crops\nSteps: %d blocks executed") % [
 		LevelManager.harvest_count,
 		LevelManager.step_count
 	]
 
 	next_button.visible = not is_last
 	if is_last:
-		title_label.text = "🏆 Selamat!\nSemua Level Selesai!"
+		title_label.text = tr("🏆 Congratulations!\nAll Levels Completed!")
 
 	overlay.visible = true
 

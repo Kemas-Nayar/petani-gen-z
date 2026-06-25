@@ -39,6 +39,13 @@ func _ready():
 	executor.execution_finished.connect(_on_execution_finished)
 	add_child(executor)
 
+	var settings_manager = get_node_or_null("/root/SettingsManager")
+	if settings_manager:
+		settings_manager.settings_changed.connect(_on_settings_changed)
+
+	_refresh_ui()
+
+func _on_settings_changed() -> void:
 	_refresh_ui()
 
 func _setup_drop_target(control: Control) -> void:
@@ -150,10 +157,10 @@ func add_block_to_program(block_id: String, insert_index: int = -1) -> void:
 	if executor.is_running:
 		return
 	if not _is_valid_top_level_block(block_id):
-		status_label.text = "Blok kondisi hanya bisa di dalam for/while/if."
+		status_label.text = tr("Condition blocks can only be inside for/while/if.")
 		return
 	if program.size() >= MAX_BLOCKS:
-		status_label.text = "Program penuh!"
+		status_label.text = tr("Program full!")
 		return
 
 	var node := _make_block_node(block_id)
@@ -245,7 +252,7 @@ func _refresh_ui() -> void:
 
 	if program.is_empty():
 		var hint := Label.new()
-		hint.text = "Klik atau drag blok ke sini"
+		hint.text = tr("Click or drag blocks here")
 		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.35))
 		hint.add_theme_font_size_override("font_size", 13)
@@ -324,7 +331,7 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			hbox.add_theme_constant_override("separation", 2)
 			
 			var lbl1 := Label.new()
-			lbl1.text = "for("
+			lbl1.text = tr("for") + "("
 			lbl1.add_theme_color_override("font_color", Color.WHITE)
 			lbl1.add_theme_font_size_override("font_size", 13)
 			hbox.add_child(lbl1)
@@ -363,7 +370,7 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			hbox.add_theme_constant_override("separation", 2)
 			
 			var lbl1 := Label.new()
-			lbl1.text = "wait("
+			lbl1.text = tr("wait") + "("
 			lbl1.add_theme_color_override("font_color", Color.WHITE)
 			lbl1.add_theme_font_size_override("font_size", 13)
 			hbox.add_child(lbl1)
@@ -394,7 +401,7 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			hbox.add_child(line_edit)
 			
 			var lbl2 := Label.new()
-			lbl2.text = "s)"
+			lbl2.text = tr("s)")
 			lbl2.add_theme_color_override("font_color", Color.WHITE)
 			lbl2.add_theme_font_size_override("font_size", 13)
 			hbox.add_child(lbl2)
@@ -406,7 +413,7 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			hbox.add_theme_constant_override("separation", 2)
 			
 			var lbl1 := Label.new()
-			lbl1.text = "%s(" % node.id
+			lbl1.text = "%s(" % tr(node.id)
 			lbl1.add_theme_color_override("font_color", Color.WHITE)
 			lbl1.add_theme_font_size_override("font_size", 13)
 			hbox.add_child(lbl1)
@@ -430,7 +437,7 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			cond_panel.add_child(cond_margin)
 			
 			var cond_lbl := Label.new()
-			cond_lbl.text = cond_def.label if cond_def else "?"
+			cond_lbl.text = tr(cond_def.label) if cond_def else "?"
 			cond_lbl.add_theme_color_override("font_color", Color.WHITE)
 			cond_lbl.add_theme_font_size_override("font_size", 11)
 			cond_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -448,7 +455,7 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			block_panel.add_child(hbox)
 		else:
 			var lbl = Label.new()
-			lbl.text = def.label
+			lbl.text = tr(def.label)
 			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			lbl.add_theme_color_override("font_color", Color.WHITE)
@@ -516,7 +523,7 @@ func _make_child_drop_zone(parent_node: BlockNode, depth: int) -> Control:
 	sp.custom_minimum_size = Vector2(depth * 16, 0)
 	indent_box.add_child(sp)
 	var hint = Label.new()
-	hint.text = "  + drop blok di sini"
+	hint.text = tr("  + drop block here")
 	hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.4))
 	hint.add_theme_font_size_override("font_size", 12)
 	indent_box.add_child(hint)
@@ -547,7 +554,7 @@ func _on_run_pressed() -> void:
 	character.input_locked = true
 	run_button.disabled = true
 	stop_button.disabled = false
-	status_label.text = "Menjalankan..."
+	status_label.text = tr("Running...")
 	executor.execute(program)
 
 func _on_stop_pressed() -> void:
@@ -558,14 +565,14 @@ func _on_execution_finished() -> void:
 	run_button.disabled = false
 	stop_button.disabled = true
 	if not LevelManager.level_complete:
-		status_label.text = "Selesai."
+		status_label.text = tr("Finished.")
 
 func _on_progress_updated(harvest: int, target: int, steps: int, max_steps: int) -> void:
 	if executor.is_running:
 		if max_steps > 0:
-			status_label.text = "Panen: %d/%d | Langkah: %d/%d" % [harvest, target, steps, max_steps]
+			status_label.text = tr("Harvest: %d/%d | Steps: %d/%d") % [harvest, target, steps, max_steps]
 		else:
-			status_label.text = "Panen: %d/%d" % [harvest, target]
+			status_label.text = tr("Harvest: %d/%d") % [harvest, target]
 
 func _on_clear_pressed() -> void:
 	if executor.is_running:
@@ -579,4 +586,4 @@ func _on_reset_map_pressed() -> void:
 		return
 	FarmManager.reset_map()
 	LevelManager.reset_run()
-	status_label.text = "Map direset ke kondisi awal."
+	status_label.text = tr("Map reset to initial state.")

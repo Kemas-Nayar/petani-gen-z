@@ -34,7 +34,7 @@ func _process(delta):
 		panel.visible = false
 		return
 
-	timer_label.text = "🌱 Tumbuh dalam %.1f detik" % countdown
+	timer_label.text = tr("🌱 Grows in %.1f seconds") % countdown
 
 func _on_tile_state_changed(grid_pos: Vector2i, new_state: FarmTile.State) -> void:
 	if new_state == FarmTile.State.WATERED:

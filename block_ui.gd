@@ -34,7 +34,7 @@ func setup(def: BlockDefinition, in_sequence: bool = false) -> void:
 	add_theme_stylebox_override("panel", style)
 
 	var label = Label.new()
-	label.text = def.label
+	label.text = tr(def.label)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_color_override("font_color", Color.WHITE)

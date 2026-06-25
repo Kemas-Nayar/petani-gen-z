@@ -1,0 +1,140 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://settings_menu.gd" id="1_settings_menu"]
+
+[node name="SettingsMenu" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_settings_menu")
+
+[node name="Overlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.06, 0.09, 0.75)
+
+[node name="CenterContainer" type="CenterContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="Overlay/CenterContainer"]
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Overlay/CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="Overlay/CenterContainer/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "PENGATURAN"
+horizontal_alignment = 1
+
+[node name="Separator1" type="ColorRect" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.24, 0.51, 0.93, 0.5)
+
+[node name="Grid" type="GridContainer" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="MasterLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+text = "Volume Master"
+
+[node name="MasterSlider" type="HSlider" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 0.8
+
+[node name="MusicLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+text = "Volume Musik"
+
+[node name="MusicSlider" type="HSlider" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 0.8
+
+[node name="SFXLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+text = "Volume SFX"
+
+[node name="SFXSlider" type="HSlider" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 0.8
+
+[node name="FullscreenLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+text = "Layar Penuh"
+
+[node name="FullscreenCheck" type="CheckBox" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="ResolutionLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+text = "Resolusi"
+
+[node name="ResolutionOption" type="OptionButton" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LanguageLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+text = "Bahasa"
+
+[node name="LanguageOption" type="OptionButton" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Separator2" type="ColorRect" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.24, 0.51, 0.93, 0.5)
+
+[node name="Buttons" type="HBoxContainer" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ResetButton" type="Button" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reset Progres"
+
+[node name="ApplyButton" type="Button" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Terapkan"
+
+[node name="CloseButton" type="Button" parent="Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tutup"

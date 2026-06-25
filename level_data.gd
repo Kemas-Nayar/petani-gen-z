@@ -25,9 +25,9 @@ static func get_level(level_id: int) -> LevelData:
 static func level_1() -> LevelData:
 	var l = LevelData.new()
 	l.id = 1
-	l.title = "Level 1 — Petani Pemula"
-	l.description = "Panen 1 tanaman untuk menyelesaikan level ini."
-	l.hint = "Gunakan blok Plant → Water → (tunggu) → Harvest"
+	l.title = "Level 1 — Novice Farmer"
+	l.description = "Harvest 1 crop to complete this level."
+	l.hint = "Use blocks: Plant → Water → (wait) → Harvest"
 	l.conditions = [
 		{ "type": ConditionType.HARVEST_COUNT, "target": 1 }
 	]
@@ -36,9 +36,9 @@ static func level_1() -> LevelData:
 static func level_2() -> LevelData:
 	var l = LevelData.new()
 	l.id = 2
-	l.title = "Level 2 — Ladang Kecil"
-	l.description = "Panen 3 tanaman untuk menyelesaikan level ini."
-	l.hint = "Gunakan loop atau susun urutan blok yang efisien!"
+	l.title = "Level 2 — Small Field"
+	l.description = "Harvest 3 crops to complete this level."
+	l.hint = "Use loops or arrange block sequences efficiently!"
 	l.conditions = [
 		{ "type": ConditionType.HARVEST_COUNT, "target": 3 }
 	]
@@ -47,9 +47,9 @@ static func level_2() -> LevelData:
 static func level_3() -> LevelData:
 	var l = LevelData.new()
 	l.id = 3
-	l.title = "Level 3 — Efisiensi Tinggi"
-	l.description = "Panen 3 tanaman dalam maksimal 20 langkah!"
-	l.hint = "Rencanakan rute robot sebelum menekan Run."
+	l.title = "Level 3 — High Efficiency"
+	l.description = "Harvest 3 crops in maximum 20 steps!"
+	l.hint = "Plan the robot's route before pressing Run."
 	l.conditions = [
 		{ "type": ConditionType.HARVEST_COUNT, "target": 3 },
 		{ "type": ConditionType.HARVEST_COUNT_WITH_STEP_LIMIT, "max_steps": 20 }
