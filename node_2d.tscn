@@ -12,7 +12,7 @@
 [ext_resource type="Script" uid="uid://b04xkhcpevwrm" path="res://hud.gd" id="10_ir8iy"]
 [ext_resource type="Script" uid="uid://cyoh2rb3kp8vm" path="res://block_palette.gd" id="11_x0ka3"]
 [ext_resource type="Script" uid="uid://7wcy7o6b8k6w" path="res://block_sequence.gd" id="12_0h7mo"]
-[ext_resource type="Script" path="res://block_ui_layer.gd" id="13_layer"]
+[ext_resource type="Script" uid="uid://2ytufs1legsv" path="res://block_ui_layer.gd" id="13_layer"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_kdubu"]
 texture = ExtResource("1_q6r6c")
@@ -113,7 +113,7 @@ layout_mode = 2
 [node name="BlockUI" type="CanvasLayer" parent="." unique_id=568883789]
 script = ExtResource("13_layer")
 
-[node name="ToggleButton" type="Button" parent="BlockUI"]
+[node name="ToggleButton" type="Button" parent="BlockUI" unique_id=733913772]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 128.0
@@ -166,6 +166,16 @@ text = "🟢 Aksi"
 [node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/ActionSection" unique_id=1271781648]
 layout_mode = 2
 
+[node name="ControlSection" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox" unique_id=1279330468]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/ControlSection" unique_id=1858132629]
+layout_mode = 2
+text = "🟣 Kontrol"
+
+[node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/ControlSection" unique_id=752662732]
+layout_mode = 2
+
 [node name="BlockSequence" type="PanelContainer" parent="BlockUI/HBoxContainer" unique_id=1157670654]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -194,7 +204,7 @@ size_flags_vertical = 3
 [node name="StatusLabel" type="Label" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=626743409]
 layout_mode = 2
 
-[node name="ButtonRow" type="HBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox"]
+[node name="ButtonRow" type="HBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=758725575]
 layout_mode = 2
 theme_override_constants/separation = 8
 
@@ -203,6 +213,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "▶ Jalankan"
 
-[node name="ClearButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox/ButtonRow"]
+[node name="ClearButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox/ButtonRow" unique_id=1235356675]
 layout_mode = 2
 text = "Hapus Semua"

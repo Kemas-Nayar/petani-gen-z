@@ -2,7 +2,6 @@ extends PanelContainer
 
 # BlockSequence.gd
 # Panel kanan: slot urutan blok + tombol Run.
-# Attach ke node PanelContainer bernama "BlockSequence".
 
 const MAX_BLOCKS = 12
 
@@ -13,7 +12,7 @@ const MAX_BLOCKS = 12
 
 @onready var character: CharacterBody2D = $"../../../CharacterBody2D"
 
-var sequence: Array[String] = []   # list block id yang akan dieksekusi
+var sequence: Array = []  # setiap item: {"id": String, "count": int (khusus repeat_start)}
 var is_running: bool = false
 
 func _ready():
@@ -37,6 +36,10 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
 	var block_id: String = data["block_id"]
 	var insert_index := _get_insert_index(at_position)
 
+	var item := {"id": block_id}
+	if block_id == "repeat_start":
+		item["count"] = data.get("count", 3)
+
 	if data.get("from_sequence", false):
 		var from_index := _find_block_index(data.get("source"))
 		if from_index < 0:
@@ -44,12 +47,12 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
 		sequence.remove_at(from_index)
 		if from_index < insert_index:
 			insert_index -= 1
-		sequence.insert(insert_index, block_id)
+		sequence.insert(insert_index, item)
 	else:
 		if sequence.size() >= MAX_BLOCKS:
 			status_label.text = "Slot penuh! (maks %d blok)" % MAX_BLOCKS
 			return
-		sequence.insert(insert_index, block_id)
+		sequence.insert(insert_index, item)
 
 	_refresh_slots()
 	status_label.text = ""
@@ -61,7 +64,8 @@ func _refresh_slots() -> void:
 		child.queue_free()
 
 	for i in sequence.size():
-		var def = _find_def(sequence[i])
+		var item = sequence[i]
+		var def = _find_def(item["id"])
 		if def == null:
 			continue
 
@@ -77,8 +81,11 @@ func _refresh_slots() -> void:
 
 		var block = PanelContainer.new()
 		block.set_script(load("res://block_ui.gd"))
-		block.setup(def, true)
+		var initial_count = item.get("count", 3)
+		block.setup(def, true, initial_count)
 		block.block_removed.connect(_on_block_removed)
+		if item["id"] == "repeat_start":
+			block.count_changed.connect(_on_count_changed.bind(i))
 		row.add_child(block)
 
 		var controls = VBoxContainer.new()
@@ -86,7 +93,6 @@ func _refresh_slots() -> void:
 
 		var up_btn = Button.new()
 		up_btn.text = "↑"
-		up_btn.tooltip_text = "Naikkan"
 		up_btn.custom_minimum_size = Vector2(28, 20)
 		up_btn.disabled = i == 0 or is_running
 		up_btn.pressed.connect(_move_block.bind(i, -1))
@@ -94,7 +100,6 @@ func _refresh_slots() -> void:
 
 		var down_btn = Button.new()
 		down_btn.text = "↓"
-		down_btn.tooltip_text = "Turunkan"
 		down_btn.custom_minimum_size = Vector2(28, 20)
 		down_btn.disabled = i == sequence.size() - 1 or is_running
 		down_btn.pressed.connect(_move_block.bind(i, 1))
@@ -102,7 +107,6 @@ func _refresh_slots() -> void:
 
 		var del_btn = Button.new()
 		del_btn.text = "×"
-		del_btn.tooltip_text = "Hapus (klik kanan juga bisa)"
 		del_btn.custom_minimum_size = Vector2(28, 20)
 		del_btn.disabled = is_running
 		del_btn.pressed.connect(_remove_at_index.bind(i))
@@ -114,26 +118,57 @@ func _refresh_slots() -> void:
 	run_button.disabled = sequence.is_empty() or is_running
 	clear_button.disabled = sequence.is_empty() or is_running
 
-# ── Eksekusi ──────────────────────────────────────────────────────────────
+func _on_count_changed(new_value: int, index: int) -> void:
+	if index >= 0 and index < sequence.size():
+		sequence[index]["count"] = new_value
+
+# ── Eksekusi ────────────────────────────────────────────────────────────────
 
 func _on_run_pressed() -> void:
 	if sequence.is_empty() or is_running:
 		return
 	is_running = true
 	run_button.disabled = true
+	clear_button.disabled = true
 	status_label.text = "Menjalankan..."
-	_execute_sequence()
+	await _execute_sequence()
 
 func _execute_sequence() -> void:
-	for i in sequence.size():
-		var block_id = sequence[i]
-		_highlight_slot(i)
-		await _execute_block(block_id)
+	var i = 0
+	while i < sequence.size():
+		var item = sequence[i]
+		var block_id = item["id"]
+
+		if block_id == "repeat_start":
+			var end_index = _find_matching_end(i)
+			if end_index == -1:
+				status_label.text = "🚫 Blok 'Ulangi' butuh pasangan 'Akhir Ulang'!"
+				break
+			var count = item.get("count", 3)
+			for r in count:
+				for j in range(i + 1, end_index):
+					_highlight_slot(j)
+					await _execute_block(sequence[j]["id"])
+			i = end_index + 1
+		elif block_id == "repeat_end":
+			i += 1
+		else:
+			_highlight_slot(i)
+			await _execute_block(block_id)
+			i += 1
 
 	_highlight_slot(-1)
 	is_running = false
-	run_button.disabled = false
-	status_label.text = "Selesai ✓"
+	run_button.disabled = sequence.is_empty()
+	clear_button.disabled = sequence.is_empty()
+	if status_label.text == "Menjalankan...":
+		status_label.text = "Selesai ✓"
+
+func _find_matching_end(start_index: int) -> int:
+	for i in range(start_index + 1, sequence.size()):
+		if sequence[i]["id"] == "repeat_end":
+			return i
+	return -1
 
 func _execute_block(block_id: String) -> void:
 	match block_id:
@@ -157,7 +192,6 @@ func _highlight_slot(index: int) -> void:
 	var rows = slot_container.get_children()
 	for i in rows.size():
 		var row = rows[i]
-		# Cari BlockUI di dalam row
 		for child in row.get_children():
 			if child is PanelContainer:
 				child.modulate = Color(1.4, 1.4, 0.4) if i == index else Color.WHITE
@@ -182,9 +216,9 @@ func _move_block(index: int, direction: int) -> void:
 	var new_index := index + direction
 	if new_index < 0 or new_index >= sequence.size():
 		return
-	var block_id := sequence[index]
+	var item = sequence[index]
 	sequence.remove_at(index)
-	sequence.insert(new_index, block_id)
+	sequence.insert(new_index, item)
 	_refresh_slots()
 
 func _on_clear_pressed() -> void:
@@ -194,10 +228,10 @@ func _on_clear_pressed() -> void:
 	_refresh_slots()
 	status_label.text = ""
 
-# ── Helper ────────────────────────────────────────────────────────────────
-
 func _on_move_blocked() -> void:
 	status_label.text = "🚫 Robot terhalang, tidak bisa lewat!"
+
+# ── Helper ────────────────────────────────────────────────────────────────
 
 func _get_insert_index(at_position: Vector2) -> int:
 	var pos_in_container := slot_container.get_global_transform().affine_inverse() * (get_global_transform() * at_position)
