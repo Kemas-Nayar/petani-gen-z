@@ -12,7 +12,8 @@
 [ext_resource type="Script" uid="uid://b04xkhcpevwrm" path="res://hud.gd" id="10_ir8iy"]
 [ext_resource type="Script" uid="uid://cyoh2rb3kp8vm" path="res://block_palette.gd" id="11_x0ka3"]
 [ext_resource type="Script" uid="uid://7wcy7o6b8k6w" path="res://block_sequence.gd" id="12_0h7mo"]
-[ext_resource type="Script" path="res://block_ui_layer.gd" id="13_layer"]
+[ext_resource type="Script" uid="uid://2ytufs1legsv" path="res://block_ui_layer.gd" id="13_layer"]
+[ext_resource type="Script" uid="uid://d1if7ymnkfcf5" path="res://win_popup.gd" id="14_popup"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_kdubu"]
 texture = ExtResource("1_q6r6c")
@@ -113,7 +114,7 @@ layout_mode = 2
 [node name="BlockUI" type="CanvasLayer" parent="." unique_id=568883789]
 script = ExtResource("13_layer")
 
-[node name="ToggleButton" type="Button" parent="BlockUI"]
+[node name="ToggleButton" type="Button" parent="BlockUI" unique_id=2012653269]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 128.0
@@ -124,7 +125,7 @@ text = "◀ Sembunyikan"
 anchors_preset = 9
 anchor_bottom = 1.0
 offset_top = 44.0
-offset_right = 360.0
+offset_right = 420.0
 grow_vertical = 2
 
 [node name="BlockPalette" type="PanelContainer" parent="BlockUI/HBoxContainer" unique_id=74384847]
@@ -134,37 +135,70 @@ script = ExtResource("11_x0ka3")
 
 [node name="MarginContainer" type="MarginContainer" parent="BlockUI/HBoxContainer/BlockPalette" unique_id=1006243797]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="VBox" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer" unique_id=1074028377]
+[node name="ScrollContainer" type="ScrollContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer" unique_id=1752813950]
 layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
-[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox" unique_id=1500426987]
+[node name="VBox" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer" unique_id=1074028377]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox" unique_id=1500426987]
 layout_mode = 2
 text = "Blok Tersedia"
 
-[node name="MoveSection" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox" unique_id=1029934587]
+[node name="MoveSection" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox" unique_id=1029934587]
 layout_mode = 2
+theme_override_constants/separation = 2
 
-[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/MoveSection" unique_id=975406704]
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/MoveSection" unique_id=975406704]
 layout_mode = 2
 text = "🔵 Gerak"
 
-[node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/MoveSection" unique_id=983497997]
+[node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/MoveSection" unique_id=983497997]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ActionSection" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox" unique_id=1398234653]
 layout_mode = 2
 
-[node name="ActionSection" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox" unique_id=1398234653]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/ActionSection" unique_id=1842035867]
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/ActionSection" unique_id=1842035867]
 layout_mode = 2
 text = "🟢 Aksi"
 
-[node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/VBox/ActionSection" unique_id=1271781648]
+[node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/ActionSection" unique_id=1271781648]
 layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ControlSection" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox" unique_id=988626593]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/ControlSection" unique_id=989808270]
+layout_mode = 2
+text = "🟣 Kontrol"
+
+[node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/ControlSection" unique_id=881091165]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ConditionSection" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox" unique_id=1115744565]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/ConditionSection" unique_id=1944305938]
+layout_mode = 2
+text = "🟡 Kondisi"
+
+[node name="Blocks" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/ConditionSection" unique_id=439093365]
+layout_mode = 2
+theme_override_constants/separation = 2
 
 [node name="BlockSequence" type="PanelContainer" parent="BlockUI/HBoxContainer" unique_id=1157670654]
 layout_mode = 2
@@ -187,14 +221,20 @@ size_flags_vertical = 3
 layout_mode = 2
 text = "Urutan Blok"
 
-[node name="SlotContainer" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=1431481910]
+[node name="ScrollContainer" type="ScrollContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=1784894706]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="SlotContainer" type="VBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox/ScrollContainer" unique_id=1431481910]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
 
 [node name="StatusLabel" type="Label" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=626743409]
 layout_mode = 2
 
-[node name="ButtonRow" type="HBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox"]
+[node name="ButtonRow" type="HBoxContainer" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox" unique_id=1721641596]
 layout_mode = 2
 theme_override_constants/separation = 8
 
@@ -203,6 +243,62 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "▶ Jalankan"
 
-[node name="ClearButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox/ButtonRow"]
+[node name="StopButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox/ButtonRow" unique_id=982782089]
+layout_mode = 2
+text = "⏹ Stop"
+
+[node name="ClearButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox/ButtonRow" unique_id=2088293154]
 layout_mode = 2
 text = "Hapus Semua"
+
+[node name="WinPopup" type="CanvasLayer" parent="." unique_id=1134704945]
+layer = 10
+script = ExtResource("14_popup")
+
+[node name="Overlay" type="ColorRect" parent="WinPopup" unique_id=1015774421]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="CenterContainer" type="CenterContainer" parent="WinPopup/Overlay" unique_id=92473733]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PopupPanel" type="PanelContainer" parent="WinPopup/Overlay/CenterContainer" unique_id=2115214602]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="WinPopup/Overlay/CenterContainer/PopupPanel" unique_id=325736167]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="WinPopup/Overlay/CenterContainer/PopupPanel/MarginContainer" unique_id=584578758]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="WinPopup/Overlay/CenterContainer/PopupPanel/MarginContainer/VBox" unique_id=219440403]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="StatsLabel" type="Label" parent="WinPopup/Overlay/CenterContainer/PopupPanel/MarginContainer/VBox" unique_id=294016184]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="NextButton" type="Button" parent="WinPopup/Overlay/CenterContainer/PopupPanel/MarginContainer/VBox" unique_id=1636114930]
+layout_mode = 2
+text = "Level Berikutnya ▶"
+
+[node name="RetryButton" type="Button" parent="WinPopup/Overlay/CenterContainer/PopupPanel/MarginContainer/VBox" unique_id=1385855593]
+layout_mode = 2
+text = "Ulangi 🔄"

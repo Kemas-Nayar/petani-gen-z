@@ -1,219 +1,266 @@
 extends PanelContainer
 
-# BlockSequence.gd
-# Panel kanan: slot urutan blok + tombol Run.
-# Attach ke node PanelContainer bernama "BlockSequence".
+const MAX_BLOCKS = 20
+const BLOCK_PANEL_WIDTH = 96
+const BLOCK_PANEL_HEIGHT = 26
+const DROP_ZONE_HEIGHT = 22
+const BLOCK_FONT_SIZE = 11
+const INDENT_PX = 12
 
-const MAX_BLOCKS = 12
-
-@onready var slot_container: VBoxContainer = $MarginContainer/VBox/SlotContainer
-@onready var run_button:     Button        = $MarginContainer/VBox/ButtonRow/RunButton
-@onready var clear_button:   Button        = $MarginContainer/VBox/ButtonRow/ClearButton
-@onready var status_label:   Label         = $MarginContainer/VBox/StatusLabel
-
+@onready var slot_container: VBoxContainer = $MarginContainer/VBox/ScrollContainer/SlotContainer
+@onready var run_button: Button = $MarginContainer/VBox/ButtonRow/RunButton
+@onready var stop_button: Button = $MarginContainer/VBox/ButtonRow/StopButton
+@onready var clear_button: Button = $MarginContainer/VBox/ButtonRow/ClearButton
+@onready var status_label: Label = $MarginContainer/VBox/StatusLabel
 @onready var character: CharacterBody2D = $"../../../CharacterBody2D"
 
-var sequence: Array[String] = []   # list block id yang akan dieksekusi
-var is_running: bool = false
+var program: Array[BlockNode] = []
+var executor: BlockExecutor = null
 
-func _ready():
+func _ready() -> void:
 	run_button.pressed.connect(_on_run_pressed)
+	stop_button.pressed.connect(_on_stop_pressed)
 	clear_button.pressed.connect(_on_clear_pressed)
-	_refresh_slots()
+	stop_button.disabled = true
+
+	LevelManager.progress_updated.connect(_on_progress_updated)
+	_on_progress_updated(
+		LevelManager.harvest_count,
+		_get_harvest_target(),
+		LevelManager.step_count,
+		_get_max_steps()
+	)
+
+	executor = BlockExecutor.new(character)
+	executor.execution_finished.connect(_on_execution_finished)
+	add_child(executor)
+
+	_refresh_ui()
 
 # ── Drop handling ──────────────────────────────────────────────────────────
 
-func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	if is_running:
+func _can_drop_data(_pos: Vector2, data: Variant) -> bool:
+	if executor.is_running:
 		return false
 	if not (data is Dictionary and data.has("block_id")):
 		return false
-	if data.get("from_sequence", false):
-		return true
-	return sequence.size() < MAX_BLOCKS
+	var def := BlockDefinition.get_by_id(data["block_id"])
+	if def == null or def.category == BlockDefinition.Category.CONDITION:
+		return false
+	return _count_nodes(program) < MAX_BLOCKS
 
-func _drop_data(at_position: Vector2, data: Variant) -> void:
-	var block_id: String = data["block_id"]
-	var insert_index := _get_insert_index(at_position)
+func _drop_data(_pos: Vector2, data: Variant) -> void:
+	if _count_nodes(program) >= MAX_BLOCKS:
+		status_label.text = "Program penuh! (maks %d blok)" % MAX_BLOCKS
+		return
+	program.append(_make_block_node(data["block_id"]))
+	_refresh_ui()
+	_update_status()
 
-	if data.get("from_sequence", false):
-		var from_index := _find_block_index(data.get("source"))
-		if from_index < 0:
-			return
-		sequence.remove_at(from_index)
-		if from_index < insert_index:
-			insert_index -= 1
-		sequence.insert(insert_index, block_id)
-	else:
-		if sequence.size() >= MAX_BLOCKS:
-			status_label.text = "Slot penuh! (maks %d blok)" % MAX_BLOCKS
-			return
-		sequence.insert(insert_index, block_id)
+func _make_block_node(id: String) -> BlockNode:
+	var node := BlockNode.new(id)
+	if id == "for":
+		node.repeat_count = 3
+	elif id in ["while", "if"]:
+		node.condition_id = "is_harvestable"
+	return node
 
-	_refresh_slots()
-	status_label.text = ""
+func add_child_block(parent_node: BlockNode, block_id: String) -> void:
+	if _count_nodes(program) >= MAX_BLOCKS:
+		status_label.text = "Program penuh! (maks %d blok)" % MAX_BLOCKS
+		return
+	parent_node.children.append(_make_block_node(block_id))
+	_refresh_ui()
+	_update_status()
 
-# ── Slot rendering ─────────────────────────────────────────────────────────
+# ── UI rendering ───────────────────────────────────────────────────────────
 
-func _refresh_slots() -> void:
+func _refresh_ui() -> void:
 	for child in slot_container.get_children():
 		child.queue_free()
+	_render_program(program, slot_container, 0)
+	var busy := executor.is_running
+	run_button.disabled = program.is_empty() or busy
+	stop_button.disabled = not busy
+	clear_button.disabled = program.is_empty() or busy
 
-	for i in sequence.size():
-		var def = _find_def(sequence[i])
+func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: int) -> void:
+	for i in nodes.size():
+		var node := nodes[i]
+		var def := BlockDefinition.get_by_id(node.id)
 		if def == null:
 			continue
 
-		var row = HBoxContainer.new()
-		row.add_theme_constant_override("separation", 4)
+		var indent := depth * INDENT_PX
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 2)
 
-		var num = Label.new()
-		num.text = "%d." % (i + 1)
-		num.custom_minimum_size = Vector2(22, 0)
-		num.add_theme_font_size_override("font_size", 13)
-		num.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		row.add_child(num)
+		if indent > 0:
+			var spacer := Control.new()
+			spacer.custom_minimum_size = Vector2(indent, 0)
+			row.add_child(spacer)
 
-		var block = PanelContainer.new()
-		block.set_script(load("res://block_ui.gd"))
-		block.setup(def, true)
-		block.block_removed.connect(_on_block_removed)
-		row.add_child(block)
+		if depth == 0:
+			var num := Label.new()
+			num.text = "%d." % (i + 1)
+			num.custom_minimum_size = Vector2(18, 0)
+			num.add_theme_font_size_override("font_size", BLOCK_FONT_SIZE)
+			num.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			row.add_child(num)
 
-		var controls = VBoxContainer.new()
-		controls.add_theme_constant_override("separation", 0)
+		var block_panel := PanelContainer.new()
+		var style := StyleBoxFlat.new()
+		style.bg_color = def.color
+		style.set_corner_radius_all(4)
+		style.border_width_left = 1
+		style.border_width_right = 1
+		style.border_width_top = 1
+		style.border_width_bottom = 1
+		style.border_color = def.color.darkened(0.3)
+		block_panel.add_theme_stylebox_override("panel", style)
+		block_panel.custom_minimum_size = Vector2(BLOCK_PANEL_WIDTH, BLOCK_PANEL_HEIGHT)
 
-		var up_btn = Button.new()
-		up_btn.text = "↑"
-		up_btn.tooltip_text = "Naikkan"
-		up_btn.custom_minimum_size = Vector2(28, 20)
-		up_btn.disabled = i == 0 or is_running
-		up_btn.pressed.connect(_move_block.bind(i, -1))
-		controls.add_child(up_btn)
+		var label_text := def.label
+		if node.id == "for":
+			label_text = "for(%d×) {" % node.repeat_count
+		elif node.id in ["while", "if"]:
+			var cond_def := BlockDefinition.get_by_id(node.condition_id)
+			var cond_name := cond_def.label if cond_def else "?"
+			label_text = "%s(%s) {" % [node.id, cond_name]
 
-		var down_btn = Button.new()
-		down_btn.text = "↓"
-		down_btn.tooltip_text = "Turunkan"
-		down_btn.custom_minimum_size = Vector2(28, 20)
-		down_btn.disabled = i == sequence.size() - 1 or is_running
-		down_btn.pressed.connect(_move_block.bind(i, 1))
-		controls.add_child(down_btn)
+		var lbl := Label.new()
+		lbl.text = label_text
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.add_theme_color_override("font_color", Color.WHITE)
+		lbl.add_theme_font_size_override("font_size", BLOCK_FONT_SIZE)
+		lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		block_panel.add_child(lbl)
+		row.add_child(block_panel)
 
-		var del_btn = Button.new()
+		var del_btn := Button.new()
 		del_btn.text = "×"
-		del_btn.tooltip_text = "Hapus (klik kanan juga bisa)"
-		del_btn.custom_minimum_size = Vector2(28, 20)
-		del_btn.disabled = is_running
-		del_btn.pressed.connect(_remove_at_index.bind(i))
-		controls.add_child(del_btn)
+		del_btn.custom_minimum_size = Vector2(22, 22)
+		del_btn.disabled = executor.is_running
+		var captured_nodes := nodes
+		var captured_i := i
+		del_btn.pressed.connect(func():
+			captured_nodes.remove_at(captured_i)
+			_refresh_ui()
+			_update_status()
+		)
+		row.add_child(del_btn)
+		container.add_child(row)
 
-		row.add_child(controls)
-		slot_container.add_child(row)
+		if def.has_children:
+			if not node.children.is_empty():
+				_render_program(node.children, container, depth + 1)
+			container.add_child(_make_child_drop_zone(node, depth + 1))
 
-	run_button.disabled = sequence.is_empty() or is_running
-	clear_button.disabled = sequence.is_empty() or is_running
+			var close_row := HBoxContainer.new()
+			if indent > 0:
+				var close_spacer := Control.new()
+				close_spacer.custom_minimum_size = Vector2(indent, 0)
+				close_row.add_child(close_spacer)
+			var close_lbl := Label.new()
+			close_lbl.text = "}"
+			close_lbl.add_theme_color_override("font_color", def.color)
+			close_lbl.add_theme_font_size_override("font_size", BLOCK_FONT_SIZE + 2)
+			close_row.add_child(close_lbl)
+			container.add_child(close_row)
+
+func _make_child_drop_zone(parent_node: BlockNode, depth: int) -> PanelContainer:
+	var zone := PanelContainer.new()
+	zone.custom_minimum_size = Vector2(0, DROP_ZONE_HEIGHT)
+	zone.mouse_filter = Control.MOUSE_FILTER_STOP
+	zone.set_script(load("res://child_drop_zone.gd"))
+	zone.set_meta("parent_block", parent_node)
+	zone.set_meta("sequence_ref", self)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(1, 1, 1, 0.05)
+	style.border_color = Color(1, 1, 1, 0.2)
+	style.border_width_left = 1
+	style.set_corner_radius_all(3)
+	zone.add_theme_stylebox_override("panel", style)
+
+	var indent_box := HBoxContainer.new()
+	var sp := Control.new()
+	sp.custom_minimum_size = Vector2(depth * INDENT_PX, 0)
+	indent_box.add_child(sp)
+	var hint := Label.new()
+	hint.text = "+ drop blok"
+	hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.4))
+	hint.add_theme_font_size_override("font_size", 10)
+	indent_box.add_child(hint)
+	zone.add_child(indent_box)
+	return zone
 
 # ── Eksekusi ──────────────────────────────────────────────────────────────
 
 func _on_run_pressed() -> void:
-	if sequence.is_empty() or is_running:
+	if program.is_empty() or executor.is_running:
 		return
-	is_running = true
+	LevelManager.reset_run()
 	run_button.disabled = true
+	stop_button.disabled = false
+	clear_button.disabled = true
 	status_label.text = "Menjalankan..."
-	_execute_sequence()
+	await executor.execute(program)
+	_on_execution_finished()
 
-func _execute_sequence() -> void:
-	for i in sequence.size():
-		var block_id = sequence[i]
-		_highlight_slot(i)
-		await _execute_block(block_id)
+func _on_stop_pressed() -> void:
+	executor.stop()
 
-	_highlight_slot(-1)
-	is_running = false
-	run_button.disabled = false
-	status_label.text = "Selesai ✓"
-
-func _execute_block(block_id: String) -> void:
-	match block_id:
-		"north":
-			character.move_to_grid(Vector2i(0, -1))
-			await character.move_finished
-		"south":
-			character.move_to_grid(Vector2i(0, 1))
-			await character.move_finished
-		"west":
-			character.move_to_grid(Vector2i(-1, 0))
-			await character.move_finished
-		"east":
-			character.move_to_grid(Vector2i(1, 0))
-			await character.move_finished
-		"plant", "water", "harvest":
-			character.do_action(block_id)
-			await get_tree().create_timer(0.3).timeout
-
-func _highlight_slot(index: int) -> void:
-	var rows = slot_container.get_children()
-	for i in rows.size():
-		var row = rows[i]
-		# Cari BlockUI di dalam row
-		for child in row.get_children():
-			if child is PanelContainer:
-				child.modulate = Color(1.4, 1.4, 0.4) if i == index else Color.WHITE
-
-# ── Hapus & atur ulang ────────────────────────────────────────────────────
-
-func _on_block_removed(block_ui) -> void:
-	var index := _find_block_index(block_ui)
-	if index >= 0:
-		_remove_at_index(index)
-
-func _remove_at_index(index: int) -> void:
-	if index < 0 or index >= sequence.size() or is_running:
-		return
-	sequence.remove_at(index)
-	_refresh_slots()
-	status_label.text = ""
-
-func _move_block(index: int, direction: int) -> void:
-	if is_running:
-		return
-	var new_index := index + direction
-	if new_index < 0 or new_index >= sequence.size():
-		return
-	var block_id := sequence[index]
-	sequence.remove_at(index)
-	sequence.insert(new_index, block_id)
-	_refresh_slots()
+func _on_execution_finished() -> void:
+	run_button.disabled = program.is_empty()
+	stop_button.disabled = true
+	clear_button.disabled = program.is_empty()
+	if not LevelManager.level_complete:
+		status_label.text = "Selesai ✓"
 
 func _on_clear_pressed() -> void:
-	if is_running or sequence.is_empty():
+	if executor.is_running or program.is_empty():
 		return
-	sequence.clear()
-	_refresh_slots()
-	status_label.text = ""
+	program.clear()
+	_refresh_ui()
+	_update_status()
 
-# ── Helper ────────────────────────────────────────────────────────────────
+func _on_progress_updated(harvest: int, target: int, steps: int, max_steps: int) -> void:
+	if max_steps > 0:
+		status_label.text = "Panen: %d/%d | Langkah: %d/%d" % [harvest, target, steps, max_steps]
+	else:
+		status_label.text = "Panen: %d/%d" % [harvest, target]
 
-func _get_insert_index(at_position: Vector2) -> int:
-	var pos_in_container := slot_container.get_global_transform().affine_inverse() * (get_global_transform() * at_position)
-	var rows := slot_container.get_children()
-	for i in rows.size():
-		var row := rows[i] as Control
-		if pos_in_container.y < row.position.y + row.size.y * 0.5:
-			return i
-	return rows.size()
+func _update_status() -> void:
+	_on_progress_updated(
+		LevelManager.harvest_count,
+		_get_harvest_target(),
+		LevelManager.step_count,
+		_get_max_steps()
+	)
 
-func _find_block_index(block_ui) -> int:
-	var rows := slot_container.get_children()
-	for i in rows.size():
-		for child in rows[i].get_children():
-			if child == block_ui:
-				return i
+func _get_harvest_target() -> int:
+	var level := LevelManager.get_current_level()
+	if level == null:
+		return 0
+	for c in level.conditions:
+		if c["type"] == LevelData.ConditionType.HARVEST_COUNT:
+			return c["target"]
+	return 0
+
+func _get_max_steps() -> int:
+	var level := LevelManager.get_current_level()
+	if level == null:
+		return -1
+	for c in level.conditions:
+		if c["type"] == LevelData.ConditionType.HARVEST_COUNT_WITH_STEP_LIMIT:
+			return c["max_steps"]
 	return -1
 
-func _find_def(id: String) -> BlockDefinition:
-	for def in BlockDefinition.get_all():
-		if def.id == id:
-			return def
-	return null
+func _count_nodes(nodes: Array[BlockNode]) -> int:
+	var count := 0
+	for node in nodes:
+		count += 1
+		count += _count_nodes(node.children)
+	return count

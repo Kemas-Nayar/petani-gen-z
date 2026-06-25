@@ -33,6 +33,7 @@ func harvest(grid_pos: Vector2i) -> bool:
 	var success = tile.harvest()
 	if success:
 		tile_state_changed.emit(grid_pos, tile.state)
+		LevelManager.on_harvested()
 	return success
 
 func get_tile_state(grid_pos: Vector2i) -> FarmTile.State:

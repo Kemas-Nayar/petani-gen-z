@@ -10,8 +10,8 @@ var drag_preview: bool = false     # true jika ini adalah preview saat drag
 
 signal block_removed(block_ui: BlockUI)  # dipancarkan saat blok di-klik kanan di sequence
 
-const BLOCK_WIDTH  = 130
-const BLOCK_HEIGHT = 44
+const BLOCK_WIDTH  = 96
+const BLOCK_HEIGHT = 28
 
 func setup(def: BlockDefinition, in_sequence: bool = false) -> void:
 	definition = def
@@ -38,12 +38,14 @@ func setup(def: BlockDefinition, in_sequence: bool = false) -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_color_override("font_color", Color.WHITE)
-	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_font_size_override("font_size", 11)
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(label)
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
-	# Buat preview visual saat drag
+	if definition.category == BlockDefinition.Category.CONDITION:
+		return null
+
 	var preview = BlockUI.new()
 	preview.setup(definition, false)
 	preview.modulate.a = 0.7

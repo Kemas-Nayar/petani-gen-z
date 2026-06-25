@@ -1,15 +1,11 @@
 extends PanelContainer
 
-# BlockPalette.gd
-# Panel kiri berisi semua blok Tier 1 yang tersedia untuk di-drag.
-# Attach ke node PanelContainer bernama "BlockPalette".
+@onready var move_blocks: VBoxContainer = $MarginContainer/ScrollContainer/VBox/MoveSection/Blocks
+@onready var action_blocks: VBoxContainer = $MarginContainer/ScrollContainer/VBox/ActionSection/Blocks
+@onready var control_blocks: VBoxContainer = $MarginContainer/ScrollContainer/VBox/ControlSection/Blocks
+@onready var condition_blocks: VBoxContainer = $MarginContainer/ScrollContainer/VBox/ConditionSection/Blocks
 
-const BlockUIScene = preload("res://block_ui.gd")
-
-@onready var move_container:   VBoxContainer = $MarginContainer/VBox/MoveSection/Blocks
-@onready var action_container: VBoxContainer = $MarginContainer/VBox/ActionSection/Blocks
-
-func _ready():
+func _ready() -> void:
 	_populate()
 
 func _populate() -> void:
@@ -20,10 +16,13 @@ func _populate() -> void:
 
 		match def.category:
 			BlockDefinition.Category.MOVE:
-				move_container.add_child(block)
+				move_blocks.add_child(block)
 			BlockDefinition.Category.ACTION:
-				action_container.add_child(block)
+				action_blocks.add_child(block)
+			BlockDefinition.Category.CONTROL:
+				control_blocks.add_child(block)
+			BlockDefinition.Category.CONDITION:
+				condition_blocks.add_child(block)
 
-# Palette tidak menerima drop — hanya sequence yang menerima
-func _can_drop_data(_at_position: Vector2, _data: Variant) -> bool:
+func _can_drop_data(_pos: Vector2, _data: Variant) -> bool:
 	return false
