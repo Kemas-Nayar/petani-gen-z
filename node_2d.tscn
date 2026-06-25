@@ -14,6 +14,8 @@
 [ext_resource type="Script" uid="uid://7wcy7o6b8k6w" path="res://block_sequence.gd" id="12_0h7mo"]
 [ext_resource type="Script" uid="uid://2ytufs1legsv" path="res://block_ui_layer.gd" id="13_layer"]
 [ext_resource type="Script" uid="uid://d1if7ymnkfcf5" path="res://win_popup.gd" id="14_popup"]
+[ext_resource type="Texture2D" path="res://background.jpg" id="15_bg"]
+
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_kdubu"]
 texture = ExtResource("1_q6r6c")
@@ -63,6 +65,19 @@ sources/12 = SubResource("TileSetAtlasSource_0h7mo")
 sources/13 = SubResource("TileSetAtlasSource_d2bti")
 
 [node name="Node2D" type="Node2D" unique_id=1473681432]
+
+[node name="BackgroundCanvas" type="CanvasLayer" parent="."]
+layer = -100
+
+[node name="TextureRect" type="TextureRect" parent="BackgroundCanvas"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("15_bg")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=667749862]
 y_sort_enabled = true

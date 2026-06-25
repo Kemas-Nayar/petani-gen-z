@@ -14,42 +14,18 @@ signal move_blocked  # dipancarkan saat robot mencoba jalan ke luar grid
 func _ready():
 	var used_cells = tile_map_layer.get_used_cells()
 	if used_cells.size() > 0:
-		var min_x = used_cells[0].x; var max_x = min_x
-		var min_y = used_cells[0].y; var max_y = min_y
-		for cell in used_cells:
-			min_x = min(min_x, cell.x); max_x = max(max_x, cell.x)
-			min_y = min(min_y, cell.y); max_y = max(max_y, cell.y)
-		var center = Vector2i((min_x + max_x) / 2, (min_y + max_y) / 2)
 		var best = used_cells[0]
-		var best_dist = center.distance_squared_to(best)
+		var best_val = best.y - best.x
 		for cell in used_cells:
-			var d = center.distance_squared_to(cell)
-			if d < best_dist:
-				best_dist = d
+			var val = cell.y - cell.x
+			if val > best_val:
+				best_val = val
 				best = cell
 		grid_pos = best
 
 	global_position = tile_map_layer.to_global(tile_map_layer.map_to_local(grid_pos))
 
-func _process(_delta):
-	if is_moving or input_locked:
-		return
 
-	# Input keyboard (aktif saat block system tidak sedang run)
-	if Input.is_action_just_pressed("ui_up"):
-		move_to_grid(Vector2i(0, -1))
-	elif Input.is_action_just_pressed("ui_down"):
-		move_to_grid(Vector2i(0, 1))
-	elif Input.is_action_just_pressed("ui_left"):
-		move_to_grid(Vector2i(-1, 0))
-	elif Input.is_action_just_pressed("ui_right"):
-		move_to_grid(Vector2i(1, 0))
-	elif Input.is_action_just_pressed("action_plant"):
-		do_action("plant")
-	elif Input.is_action_just_pressed("action_water"):
-		do_action("water")
-	elif Input.is_action_just_pressed("action_harvest"):
-		do_action("harvest")
 
 func do_action(action: String) -> bool:
 	if is_acting:
@@ -69,8 +45,10 @@ func move_to_grid(direction: Vector2i) -> void:
 	var tile_data = tile_map_layer.get_cell_tile_data(target_grid_pos)
 	if tile_data == null:
 		move_blocked.emit()
-		_shake()
-		move_finished.emit()  # tetap emit agar await di BlockSequence tidak hang
+		var shake_tween = _shake()
+		shake_tween.finished.connect(func():
+			move_finished.emit()
+		)
 		return
 
 	is_moving = true
@@ -85,9 +63,10 @@ func move_to_grid(direction: Vector2i) -> void:
 		is_moving = false
 		move_finished.emit()
 	)
-func _shake() -> void:
+func _shake() -> Tween:
 	var original_pos = position
 	var tween = create_tween()
 	tween.tween_property(self, "position", original_pos + Vector2(6, 0), 0.05)
 	tween.tween_property(self, "position", original_pos - Vector2(6, 0), 0.05)
 	tween.tween_property(self, "position", original_pos, 0.05)
+	return tween

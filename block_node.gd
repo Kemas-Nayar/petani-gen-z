@@ -6,6 +6,8 @@ var children: Array[BlockNode] = []
 var repeat_count: int = 4
 var condition_id: String = ""
 
+var wait_time: float = 1.0
+
 func _init(p_id: String = "") -> void:
 	id = p_id
 
@@ -17,6 +19,8 @@ func to_dict() -> Dictionary:
 	var d := { "id": id }
 	if id == "for":
 		d["repeat_count"] = repeat_count
+	if id == "wait":
+		d["wait_time"] = wait_time
 	if id in ["while", "if"]:
 		d["condition_id"] = condition_id
 	if not children.is_empty():

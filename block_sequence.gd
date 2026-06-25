@@ -76,6 +76,16 @@ func _can_drop_on_row(_at_position: Vector2, data: Variant, target_row: Control)
 	if not (data is Dictionary and data.has("block_id")):
 		return false
 
+	var dragged_def = BlockDefinition.get_by_id(data["block_id"])
+	if dragged_def and dragged_def.category == BlockDefinition.Category.CONDITION:
+		var target_nodes = target_row.block_nodes
+		var target_index = target_row.block_index
+		if target_index >= 0 and target_index < target_nodes.size():
+			var target_node = target_nodes[target_index]
+			if target_node.id in ["while", "if"]:
+				return true
+		return false
+
 	var target_nodes: Array = target_row.get_meta("block_nodes")
 	if data.get("reorder", false):
 		return data["source_nodes"] == target_nodes
@@ -87,6 +97,16 @@ func _can_drop_on_row(_at_position: Vector2, data: Variant, target_row: Control)
 func _drop_on_row(at_position: Vector2, data: Variant, target_row: Control) -> void:
 	var target_nodes: Array = target_row.get_meta("block_nodes")
 
+	var dragged_def = BlockDefinition.get_by_id(data["block_id"])
+	if dragged_def and dragged_def.category == BlockDefinition.Category.CONDITION:
+		var target_index = target_row.block_index
+		if target_index >= 0 and target_index < target_nodes.size():
+			var target_node = target_nodes[target_index]
+			if target_node.id in ["while", "if"]:
+				target_node.condition_id = data["block_id"]
+				_refresh_ui()
+				return
+
 	if data.get("reorder", false):
 		if data["source_nodes"] != target_nodes:
 			return
@@ -95,6 +115,7 @@ func _drop_on_row(at_position: Vector2, data: Variant, target_row: Control) -> v
 	else:
 		var insert_index := _get_insert_index_before_row(at_position, target_row, program)
 		add_block_to_program(data["block_id"], insert_index)
+
 
 func _is_valid_top_level_block(block_id: String) -> bool:
 	var def := BlockDefinition.get_by_id(block_id)
@@ -189,6 +210,8 @@ func _make_block_node(id: String) -> BlockNode:
 		node.repeat_count = 4
 	elif id in ["while", "if"]:
 		node.condition_id = "is_harvestable"
+	elif id == "wait":
+		node.wait_time = 1.0
 	return node
 
 # ── UI Rendering ───────────────────────────────────────────────────────────
@@ -269,27 +292,150 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 		style.corner_radius_bottom_left = 6
 		style.corner_radius_bottom_right = 6
 		block_panel.add_theme_stylebox_override("panel", style)
-		block_panel.custom_minimum_size = Vector2(120, 36)
+		block_panel.custom_minimum_size = Vector2(170 if (def.has_children or def.id == "wait") else 120, 36)
 		block_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 
-		var label_text = def.label
 		if node.id == "for":
-			label_text = "for(%d×) {" % node.repeat_count
+			var hbox := HBoxContainer.new()
+			hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+			hbox.add_theme_constant_override("separation", 2)
+			
+			var lbl1 := Label.new()
+			lbl1.text = "for("
+			lbl1.add_theme_color_override("font_color", Color.WHITE)
+			lbl1.add_theme_font_size_override("font_size", 13)
+			hbox.add_child(lbl1)
+			
+			var line_edit := LineEdit.new()
+			line_edit.text = str(node.repeat_count)
+			line_edit.custom_minimum_size = Vector2(40, 24)
+			line_edit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			line_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+			line_edit.add_theme_font_size_override("font_size", 12)
+			
+			# Filter numeric input only
+			line_edit.text_changed.connect(func(new_text: String):
+				var filtered := ""
+				for char in new_text:
+					if char >= "0" and char <= "9":
+						filtered += char
+				if filtered != new_text:
+					line_edit.text = filtered
+					line_edit.caret_column = filtered.length()
+				if filtered.is_valid_int():
+					node.repeat_count = clampi(filtered.to_int(), 1, 999)
+			)
+			hbox.add_child(line_edit)
+			
+			var lbl2 := Label.new()
+			lbl2.text = "×) {"
+			lbl2.add_theme_color_override("font_color", Color.WHITE)
+			lbl2.add_theme_font_size_override("font_size", 13)
+			hbox.add_child(lbl2)
+			
+			block_panel.add_child(hbox)
+		elif node.id == "wait":
+			var hbox := HBoxContainer.new()
+			hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+			hbox.add_theme_constant_override("separation", 2)
+			
+			var lbl1 := Label.new()
+			lbl1.text = "wait("
+			lbl1.add_theme_color_override("font_color", Color.WHITE)
+			lbl1.add_theme_font_size_override("font_size", 13)
+			hbox.add_child(lbl1)
+			
+			var line_edit := LineEdit.new()
+			line_edit.text = str(node.wait_time)
+			line_edit.custom_minimum_size = Vector2(40, 24)
+			line_edit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			line_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+			line_edit.add_theme_font_size_override("font_size", 12)
+			
+			# Filter decimal/numeric input only
+			line_edit.text_changed.connect(func(new_text: String):
+				var filtered := ""
+				var has_dot := false
+				for char in new_text:
+					if char >= "0" and char <= "9":
+						filtered += char
+					elif char == "." and not has_dot:
+						filtered += char
+						has_dot = true
+				if filtered != new_text:
+					line_edit.text = filtered
+					line_edit.caret_column = filtered.length()
+				if filtered.is_valid_float():
+					node.wait_time = maxf(filtered.to_float(), 0.0)
+			)
+			hbox.add_child(line_edit)
+			
+			var lbl2 := Label.new()
+			lbl2.text = "s)"
+			lbl2.add_theme_color_override("font_color", Color.WHITE)
+			lbl2.add_theme_font_size_override("font_size", 13)
+			hbox.add_child(lbl2)
+			
+			block_panel.add_child(hbox)
 		elif node.id in ["while", "if"]:
+			var hbox := HBoxContainer.new()
+			hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+			hbox.add_theme_constant_override("separation", 2)
+			
+			var lbl1 := Label.new()
+			lbl1.text = "%s(" % node.id
+			lbl1.add_theme_color_override("font_color", Color.WHITE)
+			lbl1.add_theme_font_size_override("font_size", 13)
+			hbox.add_child(lbl1)
+			
+			# Condition slot
+			var cond_panel := PanelContainer.new()
+			var cond_style := StyleBoxFlat.new()
 			var cond_def = BlockDefinition.get_by_id(node.condition_id)
-			var cond_name = cond_def.label if cond_def else "?"
-			label_text = "%s(%s) {" % [node.id, cond_name]
-
-		var lbl = Label.new()
-		lbl.text = label_text
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.add_theme_color_override("font_color", Color.WHITE)
-		lbl.add_theme_font_size_override("font_size", 13)
-		lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		lbl.mouse_filter = Control.MOUSE_FILTER_PASS
-		block_panel.add_child(lbl)
+			cond_style.bg_color = cond_def.color if cond_def else Color(0.75, 0.65, 0.00)
+			cond_style.corner_radius_top_left = 4
+			cond_style.corner_radius_top_right = 4
+			cond_style.corner_radius_bottom_left = 4
+			cond_style.corner_radius_bottom_right = 4
+			cond_panel.add_theme_stylebox_override("panel", cond_style)
+			cond_panel.custom_minimum_size = Vector2(80, 24)
+			cond_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			
+			var cond_margin := MarginContainer.new()
+			cond_margin.add_theme_constant_override("margin_left", 4)
+			cond_margin.add_theme_constant_override("margin_right", 4)
+			cond_panel.add_child(cond_margin)
+			
+			var cond_lbl := Label.new()
+			cond_lbl.text = cond_def.label if cond_def else "?"
+			cond_lbl.add_theme_color_override("font_color", Color.WHITE)
+			cond_lbl.add_theme_font_size_override("font_size", 11)
+			cond_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			cond_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			cond_margin.add_child(cond_lbl)
+			
+			hbox.add_child(cond_panel)
+			
+			var lbl2 := Label.new()
+			lbl2.text = ") {"
+			lbl2.add_theme_color_override("font_color", Color.WHITE)
+			lbl2.add_theme_font_size_override("font_size", 13)
+			hbox.add_child(lbl2)
+			
+			block_panel.add_child(hbox)
+		else:
+			var lbl = Label.new()
+			lbl.text = def.label
+			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			lbl.add_theme_color_override("font_color", Color.WHITE)
+			lbl.add_theme_font_size_override("font_size", 13)
+			lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+			block_panel.add_child(lbl)
+			
 		row.add_child(block_panel)
+
 
 		# Tombol urutan (naik / turun)
 		var up_btn := _make_reorder_button("▲", i == 0, func(): move_block_up(captured_nodes, captured_i))
@@ -388,7 +534,6 @@ func _on_execution_finished() -> void:
 	character.input_locked = false
 	run_button.disabled = false
 	stop_button.disabled = true
-	clear_button.pressed.connect(_on_clear_pressed)
 	if not LevelManager.level_complete:
 		status_label.text = "Selesai."
 
