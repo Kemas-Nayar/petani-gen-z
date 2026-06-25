@@ -266,6 +266,10 @@ text = "⏹ Stop"
 layout_mode = 2
 text = "Hapus Semua"
 
+[node name="ResetMapButton" type="Button" parent="BlockUI/HBoxContainer/BlockSequence/MarginContainer/VBox/ButtonRow" unique_id=1234560001]
+layout_mode = 2
+text = "🔄 Reset Map"
+
 [node name="BlockUI_HBoxContainer_BlockPalette_MarginContainer_VBox#ControlSection" type="VBoxContainer" parent="." unique_id=1279330468]
 
 [node name="BlockUI_HBoxContainer_BlockPalette_MarginContainer_VBox_ControlSection#Label" type="Label" parent="." unique_id=1858132629]

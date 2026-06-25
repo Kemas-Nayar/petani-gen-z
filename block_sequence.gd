@@ -10,6 +10,7 @@ const MAX_BLOCKS = 20
 @onready var run_button:     Button        = $MarginContainer/VBox/ButtonRow/RunButton
 @onready var stop_button:    Button        = $MarginContainer/VBox/ButtonRow/StopButton
 @onready var clear_button:   Button        = $MarginContainer/VBox/ButtonRow/ClearButton
+@onready var reset_map_button: Button      = $MarginContainer/VBox/ButtonRow/ResetMapButton
 @onready var status_label:   Label         = $MarginContainer/VBox/StatusLabel
 @onready var character: FarmCharacter = $"../../../CharacterBody2D"
 @onready var palette: PanelContainer      = $"../BlockPalette"
@@ -22,6 +23,7 @@ func _ready():
 	stop_button.pressed.connect(_on_stop_pressed)
 	stop_button.disabled = true
 	clear_button.pressed.connect(_on_clear_pressed)
+	reset_map_button.pressed.connect(_on_reset_map_pressed)
 
 	if palette.has_signal("block_selected"):
 		palette.block_selected.connect(_on_palette_block_selected)
@@ -64,8 +66,17 @@ func _can_drop_data(_pos: Vector2, data: Variant) -> bool:
 func _drop_data(at_position: Vector2, data: Variant) -> void:
 	if data.get("reorder", false):
 		var source_nodes: Array = data["source_nodes"]
-		var insert_index := _get_insert_index_for_list(at_position, source_nodes)
-		reorder_block_in_list(source_nodes, data["source_index"], insert_index)
+		if source_nodes == program:
+			# Reorder normal dalam program utama
+			var insert_index := _get_insert_index_for_list(at_position, program)
+			reorder_block_in_list(program, data["source_index"], insert_index)
+		else:
+			# Pindahkan dari children ke program utama
+			var block: BlockNode = source_nodes[data["source_index"]]
+			source_nodes.remove_at(data["source_index"])
+			var insert_index := _get_insert_index_for_list(at_position, program)
+			program.insert(clampi(insert_index, 0, program.size()), block)
+			_refresh_ui()
 	else:
 		var insert_index := _get_insert_index_for_list(at_position, program)
 		add_block_to_program(data["block_id"], insert_index)
@@ -88,7 +99,11 @@ func _can_drop_on_row(_at_position: Vector2, data: Variant, target_row: Control)
 
 	var target_nodes: Array = target_row.get_meta("block_nodes")
 	if data.get("reorder", false):
-		return data["source_nodes"] == target_nodes
+		var source_nodes = data["source_nodes"]
+		if source_nodes == target_nodes:
+			return true  # Reorder dalam list yang sama
+		# Izinkan memindahkan dari nested (children) ke baris top-level
+		return target_nodes == program
 
 	if target_row.get_meta("depth", 0) > 0:
 		return false
@@ -108,10 +123,18 @@ func _drop_on_row(at_position: Vector2, data: Variant, target_row: Control) -> v
 				return
 
 	if data.get("reorder", false):
-		if data["source_nodes"] != target_nodes:
-			return
-		var insert_index := _get_insert_index_before_row(at_position, target_row, target_nodes)
-		reorder_block_in_list(target_nodes, data["source_index"], insert_index)
+		var source_nodes: Array = data["source_nodes"]
+		if source_nodes == target_nodes:
+			# Reorder normal dalam list yang sama
+			var insert_index := _get_insert_index_before_row(at_position, target_row, target_nodes)
+			reorder_block_in_list(target_nodes, data["source_index"], insert_index)
+		elif target_nodes == program:
+			# Pindahkan dari children ke program utama
+			var block: BlockNode = source_nodes[data["source_index"]]
+			source_nodes.remove_at(data["source_index"])
+			var insert_index := _get_insert_index_before_row(at_position, target_row, program)
+			program.insert(clampi(insert_index, 0, program.size()), block)
+			_refresh_ui()
 	else:
 		var insert_index := _get_insert_index_before_row(at_position, target_row, program)
 		add_block_to_program(data["block_id"], insert_index)
@@ -550,3 +573,10 @@ func _on_clear_pressed() -> void:
 	program.clear()
 	_refresh_ui()
 	status_label.text = ""
+
+func _on_reset_map_pressed() -> void:
+	if executor.is_running:
+		return
+	FarmManager.reset_map()
+	LevelManager.reset_run()
+	status_label.text = "Map direset ke kondisi awal."

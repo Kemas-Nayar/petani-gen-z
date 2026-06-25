@@ -12,4 +12,10 @@ func _can_drop_data(_pos: Vector2, data: Variant) -> bool:
 func _drop_data(_pos: Vector2, data: Variant) -> void:
 	var parent_block: BlockNode = get_meta("parent_block")
 	var sequence_ref = get_meta("sequence_ref")
+	# Jika blok berasal dari sequence (bukan palette), hapus dulu dari sumber
+	if data.get("reorder", false) and data.has("source_nodes") and data.has("source_index"):
+		var source_nodes: Array = data["source_nodes"]
+		var source_index: int = data["source_index"]
+		if source_index >= 0 and source_index < source_nodes.size():
+			source_nodes.remove_at(source_index)
 	sequence_ref.add_child_block(parent_block, data["block_id"])

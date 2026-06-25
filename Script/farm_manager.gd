@@ -60,6 +60,14 @@ func wait_for_growth(grid_pos: Vector2i, should_continue: Callable = Callable())
 		if finished_pos == grid_pos:
 			return
 
+# --- Public Reset ---
+
+func reset_map() -> void:
+	# Reset semua tile ke EMPTY dan update visual
+	for pos in tiles.keys():
+		tile_state_changed.emit(pos, FarmTile.State.EMPTY)
+	tiles.clear()
+
 # --- Internal ---
 
 func _get_or_create_tile(grid_pos: Vector2i) -> FarmTile:
