@@ -5,6 +5,8 @@ class_name FarmCharacter
 
 var is_moving: bool = false
 var grid_pos: Vector2i = Vector2i(0, 0)
+var input_locked: bool = false  # true saat program blok sedang berjalan
+var is_acting: bool = false     # cegah aksi plant/water/harvest dobel
 
 signal move_finished  # dipakai oleh BlockSequence untuk await pergerakan selesai
 signal move_blocked  # dipancarkan saat robot mencoba jalan ke luar grid
@@ -30,7 +32,7 @@ func _ready():
 	global_position = tile_map_layer.to_global(tile_map_layer.map_to_local(grid_pos))
 
 func _process(_delta):
-	if is_moving:
+	if is_moving or input_locked:
 		return
 
 	# Input keyboard (aktif saat block system tidak sedang run)
@@ -50,6 +52,10 @@ func _process(_delta):
 		do_action("harvest")
 
 func do_action(action: String) -> bool:
+	if is_acting:
+		return false
+	is_acting = true
+	get_tree().create_timer(0.3).timeout.connect(func(): is_acting = false)
 	match action:
 		"plant":   return FarmManager.plant(grid_pos)
 		"water":   return FarmManager.water(grid_pos)

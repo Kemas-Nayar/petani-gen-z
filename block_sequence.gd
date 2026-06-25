@@ -375,6 +375,7 @@ func add_child_block(parent_node: BlockNode, block_id: String) -> void:
 func _on_run_pressed() -> void:
 	if program.is_empty() or executor.is_running:
 		return
+	character.input_locked = true
 	run_button.disabled = true
 	stop_button.disabled = false
 	status_label.text = "Menjalankan..."
@@ -384,6 +385,7 @@ func _on_stop_pressed() -> void:
 	executor.stop()
 
 func _on_execution_finished() -> void:
+	character.input_locked = false
 	run_button.disabled = false
 	stop_button.disabled = true
 	clear_button.pressed.connect(_on_clear_pressed)

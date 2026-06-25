@@ -54,10 +54,22 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	tooltip_text = "Klik untuk tambah · drag ke urutan blok" if not is_in_sequence else ""
 
+var _press_pos: Vector2 = Vector2.ZERO
+var _press_started: bool = false
+
 func _gui_input(event: InputEvent) -> void:
-	if not (event is InputEventMouseButton and event.pressed):
+	if not (event is InputEventMouseButton):
 		return
-	if event.button_index == MOUSE_BUTTON_LEFT and not is_in_sequence:
-		block_clicked.emit(self)
-	elif event.button_index == MOUSE_BUTTON_RIGHT and is_in_sequence:
+
+	if event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_press_pos = event.position
+			_press_started = true
+		else:
+			if _press_started and not is_in_sequence:
+				var moved_distance = (event.position - _press_pos).length()
+				if moved_distance < 6.0:  # gerak kecil = klik biasa, bukan drag
+					block_clicked.emit(self)
+			_press_started = false
+	elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and is_in_sequence:
 		block_removed.emit(self)
