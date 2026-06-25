@@ -13,7 +13,7 @@ extends CanvasLayer
 @onready var timer_label: Label = $CenterBottom/PanelContainer/MarginContainer/TimerLabel
 
 # Referensi ke karakter untuk baca grid_pos
-@onready var character: CharacterBody2D = $"../CharacterBody2D"
+@onready var character: FarmCharacter = $"../CharacterBody2D"
 
 var countdown: float = 0.0
 var is_counting: bool = false

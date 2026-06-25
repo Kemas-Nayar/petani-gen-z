@@ -1,15 +1,18 @@
 extends PanelContainer
+class_name BlockSequence
 
 # BlockSequence.gd — versi Tier 2 dengan support for/while/if bersarang
 
 const MAX_BLOCKS = 20
 
 @onready var slot_container: VBoxContainer = $MarginContainer/VBox/ScrollContainer/SlotContainer
+@onready var scroll_container: ScrollContainer = $MarginContainer/VBox/ScrollContainer
 @onready var run_button:     Button        = $MarginContainer/VBox/ButtonRow/RunButton
 @onready var stop_button:    Button        = $MarginContainer/VBox/ButtonRow/StopButton
 @onready var clear_button:   Button        = $MarginContainer/VBox/ButtonRow/ClearButton
 @onready var status_label:   Label         = $MarginContainer/VBox/StatusLabel
-@onready var character: CharacterBody2D    = $"../../../CharacterBody2D"
+@onready var character: FarmCharacter = $"../../../CharacterBody2D"
+@onready var palette: PanelContainer      = $"../BlockPalette"
 
 var program: Array[BlockNode] = []   # pohon program utama
 var executor: BlockExecutor = null
@@ -20,6 +23,13 @@ func _ready():
 	stop_button.disabled = true
 	clear_button.pressed.connect(_on_clear_pressed)
 
+	if palette.has_signal("block_selected"):
+		palette.block_selected.connect(_on_palette_block_selected)
+
+	_setup_drop_target(self)
+	_setup_drop_target(scroll_container)
+	_setup_drop_target(slot_container)
+
 	LevelManager.load_level(1)
 	LevelManager.progress_updated.connect(_on_progress_updated)
 
@@ -29,17 +39,147 @@ func _ready():
 
 	_refresh_ui()
 
+func _setup_drop_target(control: Control) -> void:
+	control.mouse_filter = Control.MOUSE_FILTER_STOP
+	control.set_drag_forwarding(
+		Callable(),
+		Callable(self, "_can_drop_data"),
+		Callable(self, "_drop_data")
+	)
+
+func _on_palette_block_selected(block_id: String) -> void:
+	add_block_to_program(block_id)
+
 # ── Drop handling ──────────────────────────────────────────────────────────
 
 func _can_drop_data(_pos: Vector2, data: Variant) -> bool:
-	return data is Dictionary and data.has("block_id") and not executor.is_running
+	if executor.is_running:
+		return false
+	if not (data is Dictionary and data.has("block_id")):
+		return false
+	if data.get("reorder", false):
+		return data.has("source_nodes")
+	return _is_valid_top_level_block(data["block_id"])
 
-func _drop_data(_pos: Vector2, data: Variant) -> void:
+func _drop_data(at_position: Vector2, data: Variant) -> void:
+	if data.get("reorder", false):
+		var source_nodes: Array = data["source_nodes"]
+		var insert_index := _get_insert_index_for_list(at_position, source_nodes)
+		reorder_block_in_list(source_nodes, data["source_index"], insert_index)
+	else:
+		var insert_index := _get_insert_index_for_list(at_position, program)
+		add_block_to_program(data["block_id"], insert_index)
+
+func _can_drop_on_row(_at_position: Vector2, data: Variant, target_row: Control) -> bool:
+	if executor.is_running:
+		return false
+	if not (data is Dictionary and data.has("block_id")):
+		return false
+
+	var target_nodes: Array = target_row.get_meta("block_nodes")
+	if data.get("reorder", false):
+		return data["source_nodes"] == target_nodes
+
+	if target_row.get_meta("depth", 0) > 0:
+		return false
+	return _is_valid_top_level_block(data["block_id"])
+
+func _drop_on_row(at_position: Vector2, data: Variant, target_row: Control) -> void:
+	var target_nodes: Array = target_row.get_meta("block_nodes")
+
+	if data.get("reorder", false):
+		if data["source_nodes"] != target_nodes:
+			return
+		var insert_index := _get_insert_index_before_row(at_position, target_row, target_nodes)
+		reorder_block_in_list(target_nodes, data["source_index"], insert_index)
+	else:
+		var insert_index := _get_insert_index_before_row(at_position, target_row, program)
+		add_block_to_program(data["block_id"], insert_index)
+
+func _is_valid_top_level_block(block_id: String) -> bool:
+	var def := BlockDefinition.get_by_id(block_id)
+	if def == null:
+		return false
+	return def.category != BlockDefinition.Category.CONDITION
+
+func add_block_to_program(block_id: String, insert_index: int = -1) -> void:
+	if executor.is_running:
+		return
+	if not _is_valid_top_level_block(block_id):
+		status_label.text = "Blok kondisi hanya bisa di dalam for/while/if."
+		return
 	if program.size() >= MAX_BLOCKS:
 		status_label.text = "Program penuh!"
 		return
-	var node = _make_block_node(data["block_id"])
-	program.append(node)
+
+	var node := _make_block_node(block_id)
+	if insert_index < 0 or insert_index >= program.size():
+		program.append(node)
+	else:
+		program.insert(insert_index, node)
+	status_label.text = ""
+	_refresh_ui()
+
+func _get_insert_index_for_list(at_position: Vector2, nodes: Array[BlockNode]) -> int:
+	var rows := _get_rows_for_list(nodes)
+	if rows.is_empty():
+		return nodes.size()
+
+	var local_pos := slot_container.get_global_transform().affine_inverse() * at_position
+	for row in rows:
+		var row_center_y := row.position.y + row.size.y * 0.5
+		if local_pos.y < row_center_y:
+			return row.get_meta("block_index")
+	return nodes.size()
+
+func _get_insert_index_before_row(at_position: Vector2, target_row: Control, nodes: Array[BlockNode]) -> int:
+	var target_index: int = target_row.get_meta("block_index")
+	var local_pos := slot_container.get_global_transform().affine_inverse() * at_position
+	var row_center_y := target_row.position.y + target_row.size.y * 0.5
+	if local_pos.y < row_center_y:
+		return target_index
+	return target_index + 1
+
+func _get_rows_for_list(nodes: Array[BlockNode]) -> Array[Control]:
+	var rows: Array[Control] = []
+	for child in slot_container.get_children():
+		if child.has_meta("block_nodes") and child.get_meta("block_nodes") == nodes:
+			rows.append(child)
+	rows.sort_custom(func(a: Control, b: Control) -> bool:
+		return a.get_meta("block_index") < b.get_meta("block_index")
+	)
+	return rows
+
+func move_block_up(nodes: Array[BlockNode], index: int) -> void:
+	if index <= 0 or index >= nodes.size():
+		return
+	var temp := nodes[index]
+	nodes[index] = nodes[index - 1]
+	nodes[index - 1] = temp
+	_refresh_ui()
+
+func move_block_down(nodes: Array[BlockNode], index: int) -> void:
+	if index < 0 or index >= nodes.size() - 1:
+		return
+	var temp := nodes[index]
+	nodes[index] = nodes[index + 1]
+	nodes[index + 1] = temp
+	_refresh_ui()
+
+func reorder_block_in_list(nodes: Array[BlockNode], from_index: int, insert_index: int) -> void:
+	if from_index < 0 or from_index >= nodes.size():
+		return
+
+	insert_index = clampi(insert_index, 0, nodes.size())
+	var block := nodes[from_index]
+	nodes.remove_at(from_index)
+	if from_index < insert_index:
+		insert_index -= 1
+	if from_index == insert_index:
+		nodes.insert(from_index, block)
+		return
+
+	nodes.insert(insert_index, block)
 	_refresh_ui()
 
 func _make_block_node(id: String) -> BlockNode:
@@ -56,8 +196,28 @@ func _make_block_node(id: String) -> BlockNode:
 func _refresh_ui() -> void:
 	for child in slot_container.get_children():
 		child.queue_free()
-	_render_program(program, slot_container, 0)
+
+	if program.is_empty():
+		var hint := Label.new()
+		hint.text = "Klik atau drag blok ke sini"
+		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.35))
+		hint.add_theme_font_size_override("font_size", 13)
+		hint.custom_minimum_size = Vector2(0, 80)
+		_setup_drop_target(hint)
+		slot_container.add_child(hint)
+	else:
+		_render_program(program, slot_container, 0)
+
 	run_button.disabled = program.is_empty() or executor.is_running
+
+func _make_reorder_button(label: String, disabled: bool, callback: Callable) -> Button:
+	var btn := Button.new()
+	btn.text = label
+	btn.custom_minimum_size = Vector2(28, 28)
+	btn.disabled = disabled
+	btn.pressed.connect(callback)
+	return btn
 
 func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: int) -> void:
 	for i in nodes.size():
@@ -67,15 +227,27 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			continue
 
 		var indent = depth * 16
+		var captured_nodes := nodes
+		var captured_i := i
 
-		# Row untuk satu blok
-		var row = HBoxContainer.new()
+		# Row untuk satu blok (draggable untuk reorder)
+		var row: HBoxContainer = HBoxContainer.new()
+		row.set_script(load("res://sequence_block_row.gd"))
+		row.sequence_ref = self
+		row.block_nodes = captured_nodes
+		row.block_index = captured_i
+		row.depth = depth
 		row.add_theme_constant_override("separation", 4)
+		row.set_meta("block_nodes", captured_nodes)
+		row.set_meta("block_index", captured_i)
+		row.set_meta("depth", depth)
+		row.tooltip_text = "Drag untuk ubah urutan"
 
 		# Indentasi visual
 		if indent > 0:
 			var spacer = Control.new()
 			spacer.custom_minimum_size = Vector2(indent, 0)
+			spacer.mouse_filter = Control.MOUSE_FILTER_PASS
 			row.add_child(spacer)
 
 		# Nomor urut (hanya level 0)
@@ -85,6 +257,7 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			num.custom_minimum_size = Vector2(22, 0)
 			num.add_theme_font_size_override("font_size", 13)
 			num.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			num.mouse_filter = Control.MOUSE_FILTER_PASS
 			row.add_child(num)
 
 		# Blok utama
@@ -97,6 +270,7 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 		style.corner_radius_bottom_right = 6
 		block_panel.add_theme_stylebox_override("panel", style)
 		block_panel.custom_minimum_size = Vector2(120, 36)
+		block_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 
 		var label_text = def.label
 		if node.id == "for":
@@ -113,15 +287,20 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 		lbl.add_theme_color_override("font_color", Color.WHITE)
 		lbl.add_theme_font_size_override("font_size", 13)
 		lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 		block_panel.add_child(lbl)
 		row.add_child(block_panel)
+
+		# Tombol urutan (naik / turun)
+		var up_btn := _make_reorder_button("▲", i == 0, func(): move_block_up(captured_nodes, captured_i))
+		var down_btn := _make_reorder_button("▼", i >= nodes.size() - 1, func(): move_block_down(captured_nodes, captured_i))
+		row.add_child(up_btn)
+		row.add_child(down_btn)
 
 		# Tombol hapus (X)
 		var del_btn = Button.new()
 		del_btn.text = "✕"
 		del_btn.custom_minimum_size = Vector2(28, 28)
-		var captured_nodes = nodes
-		var captured_i = i
 		del_btn.pressed.connect(func():
 			captured_nodes.remove_at(captured_i)
 			_refresh_ui()

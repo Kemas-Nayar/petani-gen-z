@@ -1,4 +1,5 @@
 extends CharacterBody2D
+class_name FarmCharacter
 
 @onready var tile_map_layer: TileMapLayer = $"../TileMapLayer"
 

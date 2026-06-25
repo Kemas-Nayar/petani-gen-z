@@ -9,6 +9,7 @@ var is_in_sequence: bool = false   # true jika blok ada di sequence slot
 var drag_preview: bool = false     # true jika ini adalah preview saat drag
 
 signal block_removed(block_ui: BlockUI)  # dipancarkan saat blok di-klik kanan di sequence
+signal block_clicked(block_ui: BlockUI)   # dipancarkan saat blok palette di-klik kiri
 
 const BLOCK_WIDTH  = 130
 const BLOCK_HEIGHT = 44
@@ -49,8 +50,14 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	set_drag_preview(preview)
 	return { "block_id": definition.id, "from_sequence": is_in_sequence, "source": self }
 
+func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	tooltip_text = "Klik untuk tambah · drag ke urutan blok" if not is_in_sequence else ""
+
 func _gui_input(event: InputEvent) -> void:
-	# Klik kanan di sequence → hapus blok
-	if is_in_sequence and event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-			block_removed.emit(self)
+	if not (event is InputEventMouseButton and event.pressed):
+		return
+	if event.button_index == MOUSE_BUTTON_LEFT and not is_in_sequence:
+		block_clicked.emit(self)
+	elif event.button_index == MOUSE_BUTTON_RIGHT and is_in_sequence:
+		block_removed.emit(self)

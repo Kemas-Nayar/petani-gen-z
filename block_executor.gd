@@ -11,10 +11,10 @@ signal execution_started
 signal execution_finished
 signal block_highlighted(block_node: BlockNode, depth: int)
 
-var character: CharacterBody2D = null
+var character: FarmCharacter = null
 var is_running: bool = false
 
-func _init(p_character: CharacterBody2D) -> void:
+func _init(p_character: FarmCharacter) -> void:
 	character = p_character
 
 # Jalankan list BlockNode secara berurutan
@@ -56,11 +56,22 @@ func _run_node(node: BlockNode, depth: int) -> void:
 		"east":
 			character.move_to_grid(Vector2i(1, 0))
 			await character.move_finished
-		"plant", "water", "harvest":
+		"plant", "harvest":
 			character.do_action(node.id)
 			await character.get_tree().create_timer(0.3).timeout
+		"water":
+			await _run_water_action()
 		_:
 			push_warning("BlockExecutor: unknown block id '%s'" % node.id)
+
+func _run_water_action() -> void:
+	var watered: bool = character.do_action("water")
+	await character.get_tree().create_timer(0.3).timeout
+	if watered:
+		await FarmManager.wait_for_growth(character.grid_pos, Callable(self, "_should_continue_execution"))
+
+func _should_continue_execution() -> bool:
+	return is_running
 
 func _run_for(node: BlockNode, depth: int) -> void:
 	var n = clampi(node.repeat_count, 1, MAX_ITERATIONS)
@@ -83,8 +94,8 @@ func _run_if(node: BlockNode, depth: int) -> void:
 		await _run_list(node.children, depth + 1)
 
 func _evaluate_condition(condition_id: String) -> bool:
-	var grid_pos: Vector2i = (character as CharacterBody2D).get("grid_pos") as Vector2i
-	var state = FarmManager.get_tile_state(grid_pos)
+	var grid_pos: Vector2i = character.grid_pos
+	var state := FarmManager.get_tile_state(grid_pos)
 	match condition_id:
 		"is_planted":
 			return state == FarmTile.State.PLANTED

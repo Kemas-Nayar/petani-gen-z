@@ -8,6 +8,7 @@ const GROWTH_TIME: float = 2.0  # Seconds for watered crop to become harvestable
 var tiles: Dictionary = {}  # Vector2i -> FarmTile
 
 signal tile_state_changed(grid_pos: Vector2i, new_state: FarmTile.State)
+signal growth_finished(grid_pos: Vector2i)
 
 # --- Public API (callable from scripts and later from visual block system) ---
 
@@ -46,6 +47,19 @@ func get_tile_state_name(grid_pos: Vector2i) -> String:
 		return tiles[grid_pos].get_state_name()
 	return "Empty"
 
+func wait_for_growth(grid_pos: Vector2i, should_continue: Callable = Callable()) -> void:
+	if get_tile_state(grid_pos) == FarmTile.State.HARVESTABLE:
+		return
+	if get_tile_state(grid_pos) != FarmTile.State.WATERED:
+		return
+
+	while get_tile_state(grid_pos) == FarmTile.State.WATERED:
+		if should_continue.is_valid() and not should_continue.call():
+			return
+		var finished_pos: Vector2i = await growth_finished
+		if finished_pos == grid_pos:
+			return
+
 # --- Internal ---
 
 func _get_or_create_tile(grid_pos: Vector2i) -> FarmTile:
@@ -64,3 +78,4 @@ func _on_growth_complete(grid_pos: Vector2i) -> void:
 		tile.state = FarmTile.State.HARVESTABLE
 		print("Crop ready to harvest at ", grid_pos)
 		tile_state_changed.emit(grid_pos, tile.state)
+		growth_finished.emit(grid_pos)
