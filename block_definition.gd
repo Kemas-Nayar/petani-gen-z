@@ -3,6 +3,8 @@ class_name BlockDefinition
 
 enum Category { MOVE, ACTION, CONTROL, CONDITION }
 enum BlockType { SIMPLE, CONTROL_BLOCK, CONDITION }
+=======
+enum Category { MOVE, ACTION, CONTROL }
 
 var id: String = ""
 var label: String = ""
@@ -49,6 +51,22 @@ static func get_all() -> Array[BlockDefinition]:
 		create("is_planted", "IsPlanted()", Category.CONDITION, cond, BlockType.CONDITION),
 		create("is_watered", "IsWatered()", Category.CONDITION, cond, BlockType.CONDITION),
 		create("is_harvestable", "IsHarvestable()", Category.CONDITION, cond, BlockType.CONDITION),
+=======
+# Semua blok Tier 1 + Tier 2 (loop)
+static func get_all() -> Array[BlockDefinition]:
+	var move    = Color(0.20, 0.47, 0.85)  # Biru
+	var action  = Color(0.18, 0.60, 0.25)  # Hijau
+	var control = Color(0.42, 0.30, 0.65)  # Ungu
+	return [
+		create("north",       "North ↑",      Category.MOVE,    move),
+		create("south",       "South ↓",      Category.MOVE,    move),
+		create("west",        "West ←",       Category.MOVE,    move),
+		create("east",        "East →",       Category.MOVE,    move),
+		create("plant",       "Plant 🌱",     Category.ACTION,  action),
+		create("water",       "Water 💧",     Category.ACTION,  action),
+		create("harvest",     "Harvest 🌾",   Category.ACTION,  action),
+		create("repeat_start", "↻ Ulangi",    Category.CONTROL, control),
+		create("repeat_end",   "■ Akhir Ulang", Category.CONTROL, control),
 	]
 
 static func get_by_id(block_id: String) -> BlockDefinition:
