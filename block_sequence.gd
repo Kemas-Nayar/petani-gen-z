@@ -30,7 +30,7 @@ func _ready():
 	_setup_drop_target(scroll_container)
 	_setup_drop_target(slot_container)
 
-	LevelManager.load_level(1)
+	LevelManager.load_level(LevelManager.current_level_id)
 	LevelManager.progress_updated.connect(_on_progress_updated)
 
 	executor = BlockExecutor.new(character)
@@ -186,7 +186,7 @@ func _make_block_node(id: String) -> BlockNode:
 	var node = BlockNode.new(id)
 	# Default nilai untuk blok kontrol
 	if id == "for":
-		node.repeat_count = 3
+		node.repeat_count = 4
 	elif id in ["while", "if"]:
 		node.condition_id = "is_harvestable"
 	return node

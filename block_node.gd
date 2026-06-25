@@ -3,7 +3,7 @@ class_name BlockNode
 
 var id: String = ""
 var children: Array[BlockNode] = []
-var repeat_count: int = 3
+var repeat_count: int = 4
 var condition_id: String = ""
 
 func _init(p_id: String = "") -> void:
