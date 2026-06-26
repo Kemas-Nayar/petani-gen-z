@@ -30,15 +30,15 @@ func _ready():
 func do_action(action: String) -> bool:
 	if is_acting:
 		return false
-	is_acting = true
-	get_tree().create_timer(0.3).timeout.connect(func(): is_acting = false)
+	var result := false
 	match action:
-		"plant":   return FarmManager.plant(grid_pos)
-		"water":   return FarmManager.water(grid_pos)
-		"harvest": return FarmManager.harvest(grid_pos)
+		"plant":   result = FarmManager.plant(grid_pos)
+		"water":   result = FarmManager.water(grid_pos)
+		"harvest": result = FarmManager.harvest(grid_pos)
 		_:
 			print("Unknown action: ", action)
 			return false
+	return result
 
 func move_to_grid(direction: Vector2i) -> void:
 	var target_grid_pos = grid_pos + direction

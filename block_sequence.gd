@@ -17,6 +17,7 @@ const MAX_BLOCKS = 20
 
 var program: Array[BlockNode] = []   # pohon program utama
 var executor: BlockExecutor = null
+var _highlighted_block: BlockNode = null   # blok yang sedang dieksekusi
 
 func _ready():
 	run_button.pressed.connect(_on_run_pressed)
@@ -37,6 +38,7 @@ func _ready():
 
 	executor = BlockExecutor.new(character)
 	executor.execution_finished.connect(_on_execution_finished)
+	executor.block_highlighted.connect(_on_block_highlighted)
 	add_child(executor)
 
 	var settings_manager = get_node_or_null("/root/SettingsManager")
@@ -267,6 +269,51 @@ func _refresh_ui() -> void:
 
 	run_button.disabled = program.is_empty() or executor.is_running
 
+# ── Highlight blok aktif ───────────────────────────────────────────────────
+
+func _on_block_highlighted(block_node: BlockNode, _depth: int) -> void:
+	_highlighted_block = block_node
+	_apply_highlight_to_rows()
+
+func _apply_highlight_to_rows() -> void:
+	for child in slot_container.get_children():
+		_apply_highlight_recursive(child)
+
+func _apply_highlight_recursive(node: Node) -> void:
+	if node.has_meta("block_node_ref"):
+		var block_ref: BlockNode = node.get_meta("block_node_ref")
+		var block_panel = node.get_meta("block_panel_ref") if node.has_meta("block_panel_ref") else null
+		if block_panel:
+			if block_ref == _highlighted_block:
+				_set_highlight_style(block_panel, true)
+			else:
+				_set_highlight_style(block_panel, false)
+	for child in node.get_children():
+		_apply_highlight_recursive(child)
+
+func _set_highlight_style(panel: PanelContainer, active: bool) -> void:
+	var style := panel.get_theme_stylebox("panel") as StyleBoxFlat
+	if style == null:
+		return
+	if active:
+		style.border_color  = Color(1.0, 0.95, 0.2, 1.0)   # kuning cerah
+		style.border_width_left   = 3
+		style.border_width_top    = 3
+		style.border_width_right  = 3
+		style.border_width_bottom = 3
+		style.shadow_color = Color(1.0, 0.9, 0.0, 0.6)
+		style.shadow_size  = 8
+	else:
+		style.border_width_left   = 0
+		style.border_width_top    = 0
+		style.border_width_right  = 0
+		style.border_width_bottom = 0
+		style.shadow_size = 0
+
+func _clear_all_highlights() -> void:
+	_highlighted_block = null
+	_apply_highlight_to_rows()
+
 func _make_reorder_button(label: String, disabled: bool, callback: Callable) -> Button:
 	var btn := Button.new()
 	btn.text = label
@@ -327,6 +374,9 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 		block_panel.add_theme_stylebox_override("panel", style)
 		block_panel.custom_minimum_size = Vector2(170 if (def.has_children or def.id == "wait") else 120, 36)
 		block_panel.mouse_filter = Control.MOUSE_FILTER_PASS
+		# Tag untuk sistem highlight — row menyimpan referensi ke BlockNode dan panel-nya
+		row.set_meta("block_node_ref",  node)
+		row.set_meta("block_panel_ref", block_panel)
 
 		if node.id == "for":
 			var hbox := HBoxContainer.new()
@@ -577,6 +627,7 @@ func _on_execution_finished() -> void:
 	character.input_locked = false
 	run_button.disabled = false
 	stop_button.disabled = true
+	_clear_all_highlights()
 	if not LevelManager.level_complete and not LevelManager.level_failed_state:
 		LevelManager.trigger_fail()
 	if not LevelManager.level_complete and not LevelManager.level_failed_state:

@@ -23,13 +23,20 @@ static func create(p_id: String, p_label: String, p_cat: Category, p_color: Colo
 	b.has_children = p_has_children
 	return b
 
+# Cache statis agar tidak rebuild array setiap pemanggilan
+static var _cache: Array[BlockDefinition] = []
+static var _cache_by_id: Dictionary = {}
+
 static func get_all() -> Array[BlockDefinition]:
+	if not _cache.is_empty():
+		return _cache
+
 	var move    = Color(0.20, 0.47, 0.85)   # Biru
 	var action  = Color(0.18, 0.60, 0.25)   # Hijau
 	var control = Color(0.50, 0.15, 0.70)   # Ungu
 	var cond    = Color(0.75, 0.65, 0.00)   # Kuning
 
-	return [
+	_cache = [
 		# Tier 1 — Gerak
 		create("north",   "North ↑",   Category.MOVE,   move),
 		create("south",   "South ↓",   Category.MOVE,   move),
@@ -57,12 +64,16 @@ static func get_all() -> Array[BlockDefinition]:
 		create("is_path_west",   "IsPathWest()",   Category.CONDITION, cond, BlockType.CONDITION),
 		create("is_path_east",   "IsPathEast()",   Category.CONDITION, cond, BlockType.CONDITION),
 	]
+	# Bangun index id → definisi untuk O(1) lookup
+	_cache_by_id.clear()
+	for def in _cache:
+		_cache_by_id[def.id] = def
+	return _cache
 
 static func get_by_id(id: String) -> BlockDefinition:
-	for def in get_all():
-		if def.id == id:
-			return def
-	return null
+	if _cache_by_id.is_empty():
+		get_all()  # pastikan cache terisi
+	return _cache_by_id.get(id, null)
 
 static func get_by_category(cat: Category) -> Array[BlockDefinition]:
 	var result: Array[BlockDefinition] = []

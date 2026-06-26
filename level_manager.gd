@@ -85,6 +85,9 @@ func _check_win() -> void:
 				if harvest_count < condition["target"]:
 					all_met = false
 			LevelData.ConditionType.HARVEST_COUNT_WITH_STEP_LIMIT:
+				# Harus memenuhi target panen DAN tidak melebihi batas step
+				if harvest_count < condition["target"]:
+					all_met = false
 				if step_count > condition["max_steps"]:
 					all_met = false
 

@@ -32,7 +32,7 @@ func _on_level_won(level_id: int) -> void:
 	if is_last:
 		title_label.text = tr("🏆 Congratulations!\nAll Levels Completed!")
 
-	overlay.visible = true
+	_show_popup_animated()
 
 func _on_level_failed(level_id: int) -> void:
 	var level := LevelData.get_level(level_id)
@@ -55,7 +55,13 @@ func _on_level_failed(level_id: int) -> void:
 	]
 	
 	next_button.visible = false
+	_show_popup_animated()
+
+func _show_popup_animated() -> void:
+	overlay.modulate.a = 0.0
 	overlay.visible = true
+	var tw := overlay.create_tween()
+	tw.tween_property(overlay, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_SINE)
 
 func _on_next_pressed() -> void:
 	overlay.visible = false
