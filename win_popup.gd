@@ -10,6 +10,7 @@ func _ready() -> void:
 	overlay.visible = false
 	layer = 10
 	LevelManager.level_won.connect(_on_level_won)
+	LevelManager.level_failed.connect(_on_level_failed)
 	next_button.pressed.connect(_on_next_pressed)
 	retry_button.pressed.connect(_on_retry_pressed)
 	
@@ -31,6 +32,29 @@ func _on_level_won(level_id: int) -> void:
 	if is_last:
 		title_label.text = tr("🏆 Congratulations!\nAll Levels Completed!")
 
+	overlay.visible = true
+
+func _on_level_failed(level_id: int) -> void:
+	var level := LevelData.get_level(level_id)
+	
+	title_label.text = tr("❌ Level Failed!\n%s") % tr(level.title)
+	
+	# Tentukan penyebab kegagalan
+	var reason = tr("Target level not reached.")
+	var max_steps := -1
+	for c in level.conditions:
+		if c["type"] == LevelData.ConditionType.HARVEST_COUNT_WITH_STEP_LIMIT:
+			max_steps = c["max_steps"]
+	
+	if max_steps > 0 and LevelManager.step_count > max_steps:
+		reason = tr("Steps exceeded limit (%d/%d)!") % [LevelManager.step_count, max_steps]
+		
+	stats_label.text = reason + "\n" + tr("Harvested: %d crops\nSteps: %d blocks executed") % [
+		LevelManager.harvest_count,
+		LevelManager.step_count
+	]
+	
+	next_button.visible = false
 	overlay.visible = true
 
 func _on_next_pressed() -> void:

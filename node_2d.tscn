@@ -81,7 +81,7 @@ stretch_mode = 6
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=667749862]
 y_sort_enabled = true
-position = Vector2(-42, -378)
+position = Vector2(200, -378)
 tile_map_data = PackedByteArray("AAADAAUACgAAAAAAAAADAAYACgAAAAAAAAAEAAUACgAAAAAAAAAEAAYACgAAAAAAAAAFAAYACgAAAAAAAAADAAQACgAAAAAAAAAEAAQACgAAAAAAAAAFAAQACgAAAAAAAAAFAAUACgAAAAAAAAA=")
 tile_set = SubResource("TileSet_ta5nu")
 

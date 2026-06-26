@@ -68,6 +68,14 @@ func reset_map() -> void:
 		tile_state_changed.emit(pos, FarmTile.State.EMPTY)
 	tiles.clear()
 
+func set_tile_state(grid_pos: Vector2i, state: FarmTile.State) -> void:
+	var tile = _get_or_create_tile(grid_pos)
+	tile.state = state
+	tile_state_changed.emit(grid_pos, state)
+	if state == FarmTile.State.WATERED:
+		var timer = get_tree().create_timer(GROWTH_TIME)
+		timer.timeout.connect(_on_growth_complete.bind(grid_pos))
+
 # --- Internal ---
 
 func _get_or_create_tile(grid_pos: Vector2i) -> FarmTile:

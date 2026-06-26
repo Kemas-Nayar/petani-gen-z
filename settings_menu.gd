@@ -78,6 +78,18 @@ func _ready() -> void:
 	# Muat nilai dari settings_manager
 	_load_ui_values()
 	_update_texts()
+	
+	# Sembunyikan semua pengaturan kecuali bahasa
+	master_label.visible = false
+	master_slider.visible = false
+	music_label.visible = false
+	music_slider.visible = false
+	sfx_label.visible = false
+	sfx_slider.visible = false
+	fullscreen_label.visible = false
+	fullscreen_check.visible = false
+	resolution_label.visible = false
+	resolution_option.visible = false
 
 func _load_ui_values() -> void:
 	master_slider.value = local_settings.master_volume

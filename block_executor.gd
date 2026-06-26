@@ -29,7 +29,7 @@ func execute(program: Array[BlockNode]) -> void:
 
 func _run_list(nodes: Array[BlockNode], depth: int) -> void:
 	for node in nodes:
-		if not is_running or LevelManager.level_complete:
+		if not is_running or LevelManager.level_complete or LevelManager.level_failed_state:
 			break
 		await _run_node(node, depth)
 
@@ -69,13 +69,13 @@ func _run_node(node: BlockNode, depth: int) -> void:
 func _run_for(node: BlockNode, depth: int) -> void:
 	var n = clampi(node.repeat_count, 1, MAX_ITERATIONS)
 	for i in n:
-		if not is_running or LevelManager.level_complete:
+		if not is_running or LevelManager.level_complete or LevelManager.level_failed_state:
 			break
 		await _run_list(node.children, depth + 1)
 
 func _run_while(node: BlockNode, depth: int) -> void:
 	var iterations = 0
-	while _evaluate_condition(node.condition_id) and is_running and not LevelManager.level_complete:
+	while _evaluate_condition(node.condition_id) and is_running and not LevelManager.level_complete and not LevelManager.level_failed_state:
 		iterations += 1
 		if iterations >= MAX_ITERATIONS:
 			push_warning("BlockExecutor: while loop melebihi batas %d iterasi — dihentikan." % MAX_ITERATIONS)

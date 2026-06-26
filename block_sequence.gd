@@ -564,7 +564,9 @@ func _on_execution_finished() -> void:
 	character.input_locked = false
 	run_button.disabled = false
 	stop_button.disabled = true
-	if not LevelManager.level_complete:
+	if not LevelManager.level_complete and not LevelManager.level_failed_state:
+		LevelManager.trigger_fail()
+	if not LevelManager.level_complete and not LevelManager.level_failed_state:
 		status_label.text = tr("Finished.")
 
 func _on_progress_updated(harvest: int, target: int, steps: int, max_steps: int) -> void:

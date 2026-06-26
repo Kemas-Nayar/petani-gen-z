@@ -64,6 +64,9 @@ func setup_translations() -> void:
 	t_id.add_message("Do you want to save changes before closing?", "Apakah Anda ingin menyimpan perubahan sebelum menutup?")
 	t_id.add_message("Save", "Simpan")
 	t_id.add_message("Discard", "Jangan Simpan")
+	t_id.add_message("❌ Level Failed!\n%s", "❌ Level Gagal!\n%s")
+	t_id.add_message("Target level not reached.", "Target level tidak tercapai.")
+	t_id.add_message("Steps exceeded limit (%d/%d)!", "Langkah melebihi batas (%d/%d)!")
 	
 	# UI Game / Block UI
 	t_id.add_message("Select Level:", "Pilih Level:")
@@ -101,6 +104,34 @@ func setup_translations() -> void:
 	t_id.add_message("Level 3 — High Efficiency", "Level 3 — Efisiensi Tinggi")
 	t_id.add_message("Harvest 3 crops in maximum 20 steps!", "Panen 3 tanaman dalam maksimal 20 langkah!")
 	t_id.add_message("Plan the robot's route before pressing Run.", "Rencanakan rute robot sebelum menekan Run.")
+	
+	t_id.add_message("Level 4 — The Spiral Path", "Level 4 — Jalur Spiral")
+	t_id.add_message("Harvest 5 crops.", "Panen 5 tanaman.")
+	t_id.add_message("Plant, water, and harvest 5 crops in a spiral pattern.", "Tanam, siram, dan panen 5 tanaman dengan pola spiral.")
+	
+	t_id.add_message("Level 5 — Grand Harvest", "Level 5 — Panen Raya")
+	t_id.add_message("Harvest all 9 crops in the field.", "Panen seluruh 9 tanaman di ladang.")
+	t_id.add_message("Find a traversal pattern (like zigzag) to plant, water, and harvest all 9 tiles.", "Temukan pola penjelajahan (seperti zigzag) untuk menanam, menyiram, dan memanen seluruh 9 ubin.")
+	
+	t_id.add_message("Level 6 — Smart Loop", "Level 6 — Loop Pintar")
+	t_id.add_message("Harvest 6 crops in maximum 35 steps!", "Panen 6 tanaman dalam maksimal 35 langkah!")
+	t_id.add_message("Use nested loops to cover tiles and save steps.", "Gunakan loop bersarang untuk menjangkau ubin dan menghemat langkah.")
+	
+	t_id.add_message("Level 7 — Grid Speedrun", "Level 7 — Balapan Grid")
+	t_id.add_message("Harvest all 9 crops in maximum 55 steps!", "Panen seluruh 9 tanaman dalam maksimal 55 langkah!")
+	t_id.add_message("Combine actions efficiently within loops to traverse and harvest the 3x3 grid.", "Gabungkan aksi secara efisien di dalam loop untuk menjelajahi dan memanen grid 3x3.")
+	
+	t_id.add_message("Level 8 — Adaptive Farming", "Level 8 — Pertanian Adaptif")
+	t_id.add_message("Harvest 6 crops in maximum 40 steps!", "Panen 6 tanaman dalam maksimal 40 langkah!")
+	t_id.add_message("Use conditions like 'if(IsNotPlanted())' to avoid planting on already planted tiles.", "Gunakan kondisi seperti 'jika(BelumDitanam())' untuk menghindari menanam pada ubin yang sudah ditanami.")
+	
+	t_id.add_message("Level 9 — The Lazy Robot", "Level 9 — Robot Pemalas")
+	t_id.add_message("Harvest 6 crops in maximum 35 steps!", "Panen 6 tanaman dalam maksimal 35 langkah!")
+	t_id.add_message("Pre-watered tiles grow automatically. Check if tiles are growing to save actions.", "Ubin yang sudah disiram tumbuh otomatis. Periksa apakah tanaman sedang tumbuh untuk menghemat aksi.")
+	
+	t_id.add_message("Level 10 — Ultimate Farm Master", "Level 10 — Master Petani Sejati")
+	t_id.add_message("Harvest all 9 crops in maximum 60 steps!", "Panen seluruh 9 tanaman dalam maksimal 60 langkah!")
+	t_id.add_message("Write an adaptive program that handles a mix of empty, planted, and watered tiles.", "Tulis program adaptif yang menangani campuran ubin kosong, ditanam, dan disiram.")
 	
 	# Block Names (Indonesian translations of English source labels)
 	t_id.add_message("North ↑", "Utara ↑")

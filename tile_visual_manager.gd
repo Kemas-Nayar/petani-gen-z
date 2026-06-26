@@ -32,6 +32,9 @@ const ALT_TILE := 0
 
 func _ready():
 	FarmManager.tile_state_changed.connect(_on_tile_state_changed)
+	# Draw existing tiles if any are already populated in FarmManager
+	for pos in FarmManager.tiles:
+		_on_tile_state_changed(pos, FarmManager.tiles[pos].state)
 
 func _on_tile_state_changed(grid_pos: Vector2i, new_state: FarmTile.State) -> void:
 	var source_id = SOURCE_IDS.get(new_state, SOURCE_IDS[FarmTile.State.EMPTY])
