@@ -43,6 +43,7 @@ static func get_all() -> Array[BlockDefinition]:
 		create("for",     "for(N) { }",   Category.CONTROL,   control, BlockType.CONTROL_BLOCK, true),
 		create("while",   "while(cond){ }",Category.CONTROL,  control, BlockType.CONTROL_BLOCK, true),
 		create("if",      "if(cond){ }",  Category.CONTROL,   control, BlockType.CONTROL_BLOCK, true),
+		create("else",    "else { }",     Category.CONTROL,   control, BlockType.CONTROL_BLOCK, true),
 		create("wait",    "wait(N s)",    Category.CONTROL,   control, BlockType.SIMPLE, false),
 		# Tier 2 — Kondisi
 		create("is_planted",     "IsPlanted()",     Category.CONDITION, cond, BlockType.CONDITION),
@@ -51,6 +52,10 @@ static func get_all() -> Array[BlockDefinition]:
 		create("is_not_planted", "IsNotPlanted()", Category.CONDITION, cond, BlockType.CONDITION),
 		create("is_not_watered", "IsNotWatered()", Category.CONDITION, cond, BlockType.CONDITION),
 		create("is_not_harvestable", "IsNotHarvestable()", Category.CONDITION, cond, BlockType.CONDITION),
+		create("is_path_north",  "IsPathNorth()",  Category.CONDITION, cond, BlockType.CONDITION),
+		create("is_path_south",  "IsPathSouth()",  Category.CONDITION, cond, BlockType.CONDITION),
+		create("is_path_west",   "IsPathWest()",   Category.CONDITION, cond, BlockType.CONDITION),
+		create("is_path_east",   "IsPathEast()",   Category.CONDITION, cond, BlockType.CONDITION),
 	]
 
 static func get_by_id(id: String) -> BlockDefinition:

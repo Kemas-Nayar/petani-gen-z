@@ -104,16 +104,9 @@ func _can_drop_on_row(_at_position: Vector2, data: Variant, target_row: Control)
 				return true
 		return false
 
-	var target_nodes: Array = target_row.get_meta("block_nodes")
 	if data.get("reorder", false):
-		var source_nodes = data["source_nodes"]
-		if source_nodes == target_nodes:
-			return true  # Reorder dalam list yang sama
-		# Izinkan memindahkan dari nested (children) ke baris top-level
-		return target_nodes == program
+		return true
 
-	if target_row.get_meta("depth", 0) > 0:
-		return false
 	return _is_valid_top_level_block(data["block_id"])
 
 func _drop_on_row(at_position: Vector2, data: Variant, target_row: Control) -> void:
@@ -135,16 +128,16 @@ func _drop_on_row(at_position: Vector2, data: Variant, target_row: Control) -> v
 			# Reorder normal dalam list yang sama
 			var insert_index := _get_insert_index_before_row(at_position, target_row, target_nodes)
 			reorder_block_in_list(target_nodes, data["source_index"], insert_index)
-		elif target_nodes == program:
-			# Pindahkan dari children ke program utama
+		else:
+			# Pindahkan dari source_nodes ke target_nodes
 			var block: BlockNode = source_nodes[data["source_index"]]
 			source_nodes.remove_at(data["source_index"])
-			var insert_index := _get_insert_index_before_row(at_position, target_row, program)
-			program.insert(clampi(insert_index, 0, program.size()), block)
+			var insert_index := _get_insert_index_before_row(at_position, target_row, target_nodes)
+			target_nodes.insert(clampi(insert_index, 0, target_nodes.size()), block)
 			_refresh_ui()
 	else:
-		var insert_index := _get_insert_index_before_row(at_position, target_row, program)
-		add_block_to_program(data["block_id"], insert_index)
+		var insert_index := _get_insert_index_before_row(at_position, target_row, target_nodes)
+		add_block_to_list(data["block_id"], target_nodes, insert_index)
 
 
 func _is_valid_top_level_block(block_id: String) -> bool:
@@ -153,23 +146,33 @@ func _is_valid_top_level_block(block_id: String) -> bool:
 		return false
 	return def.category != BlockDefinition.Category.CONDITION
 
-func add_block_to_program(block_id: String, insert_index: int = -1) -> void:
+func count_total_blocks(nodes: Array[BlockNode]) -> int:
+	var total = 0
+	for node in nodes:
+		total += 1
+		total += count_total_blocks(node.children)
+	return total
+
+func add_block_to_list(block_id: String, list: Array, insert_index: int = -1) -> void:
 	if executor.is_running:
 		return
 	if not _is_valid_top_level_block(block_id):
 		status_label.text = tr("Condition blocks can only be inside for/while/if.")
 		return
-	if program.size() >= MAX_BLOCKS:
+	if count_total_blocks(program) >= MAX_BLOCKS:
 		status_label.text = tr("Program full!")
 		return
 
 	var node := _make_block_node(block_id)
-	if insert_index < 0 or insert_index >= program.size():
-		program.append(node)
+	if insert_index < 0 or insert_index >= list.size():
+		list.append(node)
 	else:
-		program.insert(insert_index, node)
+		list.insert(insert_index, node)
 	status_label.text = ""
 	_refresh_ui()
+
+func add_block_to_program(block_id: String, insert_index: int = -1) -> void:
+	add_block_to_list(block_id, program, insert_index)
 
 func _get_insert_index_for_list(at_position: Vector2, nodes: Array[BlockNode]) -> int:
 	var rows := _get_rows_for_list(nodes)
@@ -453,6 +456,16 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			hbox.add_child(lbl2)
 			
 			block_panel.add_child(hbox)
+		elif node.id == "else":
+			var lbl = Label.new()
+			lbl.text = tr("else") + " {"
+			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			lbl.add_theme_color_override("font_color", Color.WHITE)
+			lbl.add_theme_font_size_override("font_size", 13)
+			lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+			block_panel.add_child(lbl)
 		else:
 			var lbl = Label.new()
 			lbl.text = tr(def.label)

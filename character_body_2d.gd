@@ -70,3 +70,9 @@ func _shake() -> Tween:
 	tween.tween_property(self, "position", original_pos - Vector2(6, 0), 0.05)
 	tween.tween_property(self, "position", original_pos, 0.05)
 	return tween
+
+func has_path(direction: Vector2i) -> bool:
+	if tile_map_layer == null:
+		return false
+	var target_grid_pos = grid_pos + direction
+	return tile_map_layer.get_cell_tile_data(target_grid_pos) != null

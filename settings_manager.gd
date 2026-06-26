@@ -160,6 +160,12 @@ func setup_translations() -> void:
 	t_id.add_message("IsNotPlanted()", "BelumDitanam()")
 	t_id.add_message("IsNotWatered()", "BelumDisiram()")
 	t_id.add_message("IsNotHarvestable()", "BelumSiapPanen()")
+	t_id.add_message("else", "selain_itu")
+	t_id.add_message("else { }", "selain_itu { }")
+	t_id.add_message("IsPathNorth()", "AdaJalanUtara()")
+	t_id.add_message("IsPathSouth()", "AdaJalanSelatan()")
+	t_id.add_message("IsPathWest()", "AdaJalanBarat()")
+	t_id.add_message("IsPathEast()", "AdaJalanTimur()")
 	
 	# Popups (Indonesian)
 	t_id.add_message("🎉 Level Complete!\n%s", "🎉 Level Selesai!\n%s")

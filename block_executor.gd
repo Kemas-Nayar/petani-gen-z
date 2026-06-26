@@ -28,14 +28,27 @@ func execute(program: Array[BlockNode]) -> void:
 	execution_finished.emit()
 
 func _run_list(nodes: Array[BlockNode], depth: int) -> void:
+	var last_if_evaluated_to_true: bool = false
+	var last_was_if: bool = false
 	for node in nodes:
 		if not is_running or LevelManager.level_complete or LevelManager.level_failed_state:
 			break
-		await _run_node(node, depth)
+		if node.id == "else":
+			block_highlighted.emit(node, depth)
+			if last_was_if and not last_if_evaluated_to_true:
+				await _run_list(node.children, depth + 1)
+			last_was_if = false
+		else:
+			if node.id == "if":
+				last_was_if = true
+				last_if_evaluated_to_true = _evaluate_condition(node.condition_id)
+			else:
+				last_was_if = false
+			await _run_node(node, depth)
 
 func _run_node(node: BlockNode, depth: int) -> void:
 	block_highlighted.emit(node, depth)
-	if node.id not in ["for", "while", "if"]:
+	if node.id not in ["for", "while", "if", "else"]:
 		LevelManager.on_step_executed()
 
 	match node.id:
@@ -102,6 +115,14 @@ func _evaluate_condition(condition_id: String) -> bool:
 			return state != FarmTile.State.WATERED
 		"is_not_harvestable":
 			return state != FarmTile.State.HARVESTABLE
+		"is_path_north":
+			return character.has_path(Vector2i(0, -1))
+		"is_path_south":
+			return character.has_path(Vector2i(0, 1))
+		"is_path_west":
+			return character.has_path(Vector2i(-1, 0))
+		"is_path_east":
+			return character.has_path(Vector2i(1, 0))
 		_:
 			return false
 
