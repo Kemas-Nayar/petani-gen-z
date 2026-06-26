@@ -1,11 +1,8 @@
 extends Control
 
-@onready var panel_container: PanelContainer = $CenterContainer/PanelContainer
-@onready var title_label: Label = $CenterContainer/PanelContainer/MarginContainer/VBox/TitleLabel
-
-@onready var play_button: Button = $CenterContainer/PanelContainer/MarginContainer/VBox/Buttons/PlayButton
-@onready var settings_button: Button = $CenterContainer/PanelContainer/MarginContainer/VBox/Buttons/SettingsButton
-@onready var quit_button: Button = $CenterContainer/PanelContainer/MarginContainer/VBox/Buttons/QuitButton
+@onready var play_button: TextureButton = $CenterContainer/VBox/Buttons/PlayButton
+@onready var settings_button: TextureButton = $CenterContainer/VBox/Buttons/SettingsButton
+@onready var quit_button: TextureButton = $CenterContainer/VBox/Buttons/QuitButton
 
 # Ambil SettingsManager secara dinamis saat runtime untuk menghindari error parse compile-time
 @onready var settings_manager = get_node("/root/SettingsManager")
@@ -13,24 +10,6 @@ extends Control
 var settings_scene = preload("res://settings_menu.tscn")
 
 func _ready() -> void:
-	# Styling panel secara dinamis untuk memberikan kesan glassmorphism premium
-	var style_box = StyleBoxFlat.new()
-	style_box.bg_color = Color(0.08, 0.09, 0.12, 0.9) # Dark navy translucent
-	style_box.border_width_left = 2
-	style_box.border_width_top = 2
-	style_box.border_width_right = 2
-	style_box.border_width_bottom = 2
-	style_box.border_color = Color(0.24, 0.51, 0.93, 0.7) # Sleek Blue Border
-	style_box.corner_radius_top_left = 12
-	style_box.corner_radius_top_right = 12
-	style_box.corner_radius_bottom_left = 12
-	style_box.corner_radius_bottom_right = 12
-	style_box.content_margin_left = 16
-	style_box.content_margin_top = 16
-	style_box.content_margin_right = 16
-	style_box.content_margin_bottom = 16
-	panel_container.add_theme_stylebox_override("panel", style_box)
-	
 	# Menghubungkan signal tombol
 	play_button.pressed.connect(_on_play_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
@@ -53,11 +32,10 @@ func _ready() -> void:
 	tween.tween_property(self, "modulate:a", 1.0, 0.4)
 
 func _update_locale_texts() -> void:
-	play_button.text = tr("Start Game")
-	settings_button.text = tr("Settings")
-	quit_button.text = tr("Exit")
+	# Tekstur tombol sudah memiliki teks terintegrasi ("START", "SETTINGS", "EXIT")
+	pass
 
-func _setup_button_effects(btn: Button) -> void:
+func _setup_button_effects(btn: TextureButton) -> void:
 	btn.pivot_offset = btn.size / 2
 	btn.item_rect_changed.connect(func(): btn.pivot_offset = btn.size / 2)
 	
