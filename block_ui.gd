@@ -1,15 +1,13 @@
 extends PanelContainer
 class_name BlockUI
 
-# BlockUI.gd
-# Satu blok yang bisa di-drag. Dibuat secara dinamis oleh BlockPalette dan BlockSequence.
 
 var definition: BlockDefinition = null
-var is_in_sequence: bool = false   # true jika blok ada di sequence slot
-var drag_preview: bool = false     # true jika ini adalah preview saat drag
+var is_in_sequence: bool = false
+var drag_preview: bool = false
 
-signal block_removed(block_ui: BlockUI)  # dipancarkan saat blok di-klik kanan di sequence
-signal block_clicked(block_ui: BlockUI)   # dipancarkan saat blok palette di-klik kiri
+signal block_removed(block_ui: BlockUI)
+signal block_clicked(block_ui: BlockUI)
 
 const BLOCK_WIDTH  = 130
 const BLOCK_HEIGHT = 44
@@ -19,7 +17,6 @@ func setup(def: BlockDefinition, in_sequence: bool = false) -> void:
 	is_in_sequence = in_sequence
 	custom_minimum_size = Vector2(BLOCK_WIDTH, BLOCK_HEIGHT)
 
-	# Warna background blok
 	var style = StyleBoxFlat.new()
 	style.bg_color = def.color
 	style.corner_radius_top_left     = 8
@@ -43,7 +40,6 @@ func setup(def: BlockDefinition, in_sequence: bool = false) -> void:
 	add_child(label)
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
-	# Buat preview visual saat drag
 	var preview = BlockUI.new()
 	preview.setup(definition, false)
 	preview.modulate.a = 0.7
@@ -68,7 +64,7 @@ func _gui_input(event: InputEvent) -> void:
 		else:
 			if _press_started and not is_in_sequence:
 				var moved_distance = (event.position - _press_pos).length()
-				if moved_distance < 6.0:  # gerak kecil = klik biasa, bukan drag
+				if moved_distance < 6.0:
 					block_clicked.emit(self)
 			_press_started = false
 	elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and is_in_sequence:

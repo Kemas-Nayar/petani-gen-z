@@ -1,18 +1,9 @@
 extends CanvasLayer
 
-# HUD.gd
-# Attach to a CanvasLayer node named "HUD" in your scene.
-# Scene tree:
-#   Node2D (root)
-#   ├── TileMapLayer
-#   ├── TileVisualManager
-#   ├── CharacterBody2D
-#   └── HUD  <-- CanvasLayer, script ini
 
 @onready var panel: PanelContainer = $CenterBottom/PanelContainer
 @onready var timer_label: Label = $CenterBottom/PanelContainer/MarginContainer/TimerLabel
 
-# Referensi ke karakter untuk baca grid_pos
 @onready var character: FarmCharacter = $"../CharacterBody2D"
 
 var countdown: float = 0.0
@@ -38,12 +29,10 @@ func _process(delta):
 
 func _on_tile_state_changed(grid_pos: Vector2i, new_state: FarmTile.State) -> void:
 	if new_state == FarmTile.State.WATERED:
-		# Mulai countdown untuk tile ini
 		watched_pos = grid_pos
 		countdown = FarmManager.GROWTH_TIME
 		is_counting = true
 		panel.visible = true
 	elif grid_pos == watched_pos:
-		# Tile yang sedang ditonton berubah state (dipanen / jadi harvestable)
 		is_counting = false
 		panel.visible = false

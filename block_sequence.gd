@@ -1,7 +1,6 @@
 extends PanelContainer
 class_name BlockSequence
 
-# BlockSequence.gd — versi Tier 2 dengan support for/while/if bersarang
 
 const MAX_BLOCKS = 20
 
@@ -15,9 +14,9 @@ const MAX_BLOCKS = 20
 @onready var character: FarmCharacter = $"../../../CharacterBody2D"
 @onready var palette: PanelContainer      = $"../BlockPalette"
 
-var program: Array[BlockNode] = []   # pohon program utama
+var program: Array[BlockNode] = []
 var executor: BlockExecutor = null
-var _highlighted_block: BlockNode = null   # blok yang sedang dieksekusi
+var _highlighted_block: BlockNode = null
 
 func _ready():
 	run_button.pressed.connect(_on_run_pressed)
@@ -61,7 +60,6 @@ func _setup_drop_target(control: Control) -> void:
 func _on_palette_block_selected(block_id: String) -> void:
 	add_block_to_program(block_id)
 
-# ── Drop handling ──────────────────────────────────────────────────────────
 
 func _can_drop_data(_pos: Vector2, data: Variant) -> bool:
 	if executor.is_running:
@@ -76,11 +74,9 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
 	if data.get("reorder", false):
 		var source_nodes: Array = data["source_nodes"]
 		if source_nodes == program:
-			# Reorder normal dalam program utama
 			var insert_index := _get_insert_index_for_list(at_position, program)
 			reorder_block_in_list(program, data["source_index"], insert_index)
 		else:
-			# Pindahkan dari children ke program utama
 			var block: BlockNode = source_nodes[data["source_index"]]
 			source_nodes.remove_at(data["source_index"])
 			var insert_index := _get_insert_index_for_list(at_position, program)
@@ -127,11 +123,9 @@ func _drop_on_row(at_position: Vector2, data: Variant, target_row: Control) -> v
 	if data.get("reorder", false):
 		var source_nodes: Array = data["source_nodes"]
 		if source_nodes == target_nodes:
-			# Reorder normal dalam list yang sama
 			var insert_index := _get_insert_index_before_row(at_position, target_row, target_nodes)
 			reorder_block_in_list(target_nodes, data["source_index"], insert_index)
 		else:
-			# Pindahkan dari source_nodes ke target_nodes
 			var block: BlockNode = source_nodes[data["source_index"]]
 			source_nodes.remove_at(data["source_index"])
 			var insert_index := _get_insert_index_before_row(at_position, target_row, target_nodes)
@@ -240,7 +234,6 @@ func reorder_block_in_list(nodes: Array[BlockNode], from_index: int, insert_inde
 
 func _make_block_node(id: String) -> BlockNode:
 	var node = BlockNode.new(id)
-	# Default nilai untuk blok kontrol
 	if id == "for":
 		node.repeat_count = 4
 	elif id in ["while", "if"]:
@@ -249,7 +242,6 @@ func _make_block_node(id: String) -> BlockNode:
 		node.wait_time = 1.0
 	return node
 
-# ── UI Rendering ───────────────────────────────────────────────────────────
 
 func _refresh_ui() -> void:
 	for child in slot_container.get_children():
@@ -269,7 +261,6 @@ func _refresh_ui() -> void:
 
 	run_button.disabled = program.is_empty() or executor.is_running
 
-# ── Highlight blok aktif ───────────────────────────────────────────────────
 
 func _on_block_highlighted(block_node: BlockNode, _depth: int) -> void:
 	_highlighted_block = block_node
@@ -296,7 +287,7 @@ func _set_highlight_style(panel: PanelContainer, active: bool) -> void:
 	if style == null:
 		return
 	if active:
-		style.border_color  = Color(1.0, 0.95, 0.2, 1.0)   # kuning cerah
+		style.border_color  = Color(1.0, 0.95, 0.2, 1.0)
 		style.border_width_left   = 3
 		style.border_width_top    = 3
 		style.border_width_right  = 3
@@ -333,7 +324,6 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 		var captured_nodes := nodes
 		var captured_i := i
 
-		# Row untuk satu blok (draggable untuk reorder)
 		var row: HBoxContainer = HBoxContainer.new()
 		row.set_script(load("res://sequence_block_row.gd"))
 		row.sequence_ref = self
@@ -346,14 +336,12 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 		row.set_meta("depth", depth)
 		row.tooltip_text = "Drag untuk ubah urutan"
 
-		# Indentasi visual
 		if indent > 0:
 			var spacer = Control.new()
 			spacer.custom_minimum_size = Vector2(indent, 0)
 			spacer.mouse_filter = Control.MOUSE_FILTER_PASS
 			row.add_child(spacer)
 
-		# Nomor urut (hanya level 0)
 		if depth == 0:
 			var num = Label.new()
 			num.text = "%d." % (i + 1)
@@ -363,7 +351,6 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			num.mouse_filter = Control.MOUSE_FILTER_PASS
 			row.add_child(num)
 
-		# Blok utama
 		var block_panel = PanelContainer.new()
 		var style = StyleBoxFlat.new()
 		style.bg_color = def.color
@@ -374,7 +361,6 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 		block_panel.add_theme_stylebox_override("panel", style)
 		block_panel.custom_minimum_size = Vector2(170 if (def.has_children or def.id == "wait") else 120, 36)
 		block_panel.mouse_filter = Control.MOUSE_FILTER_PASS
-		# Tag untuk sistem highlight — row menyimpan referensi ke BlockNode dan panel-nya
 		row.set_meta("block_node_ref",  node)
 		row.set_meta("block_panel_ref", block_panel)
 
@@ -396,7 +382,6 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			line_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
 			line_edit.add_theme_font_size_override("font_size", 12)
 			
-			# Filter numeric input only
 			line_edit.text_changed.connect(func(new_text: String):
 				var filtered := ""
 				for char in new_text:
@@ -435,7 +420,6 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			line_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
 			line_edit.add_theme_font_size_override("font_size", 12)
 			
-			# Filter decimal/numeric input only
 			line_edit.text_changed.connect(func(new_text: String):
 				var filtered := ""
 				var has_dot := false
@@ -471,7 +455,6 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 			lbl1.add_theme_font_size_override("font_size", 13)
 			hbox.add_child(lbl1)
 			
-			# Condition slot
 			var cond_panel := PanelContainer.new()
 			var cond_style := StyleBoxFlat.new()
 			var cond_def = BlockDefinition.get_by_id(node.condition_id)
@@ -530,13 +513,11 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 		row.add_child(block_panel)
 
 
-		# Tombol urutan (naik / turun)
 		var up_btn := _make_reorder_button("▲", i == 0, func(): move_block_up(captured_nodes, captured_i))
 		var down_btn := _make_reorder_button("▼", i >= nodes.size() - 1, func(): move_block_down(captured_nodes, captured_i))
 		row.add_child(up_btn)
 		row.add_child(down_btn)
 
-		# Tombol hapus (X)
 		var del_btn = Button.new()
 		del_btn.text = "✕"
 		del_btn.custom_minimum_size = Vector2(28, 28)
@@ -548,17 +529,13 @@ func _render_program(nodes: Array[BlockNode], container: VBoxContainer, depth: i
 
 		container.add_child(row)
 
-		# Blok kontrol: render children + zona drop anak
 		if def.has_children:
-			# Render children
 			if not node.children.is_empty():
 				_render_program(node.children, container, depth + 1)
 
-			# Drop zone untuk anak
 			var drop_zone = _make_child_drop_zone(node, depth + 1)
 			container.add_child(drop_zone)
 
-			# Tutup kurung
 			var close_row = HBoxContainer.new()
 			var close_spacer = Control.new()
 			close_spacer.custom_minimum_size = Vector2(indent, 0)
@@ -592,24 +569,19 @@ func _make_child_drop_zone(parent_node: BlockNode, depth: int) -> Control:
 	indent_box.add_child(hint)
 	zone.add_child(indent_box)
 
-	# Drop handling untuk zona anak
 	zone.set_script(load("res://child_drop_zone.gd") if ResourceLoader.exists("res://child_drop_zone.gd") else null)
 
-	# Gunakan meta untuk referensi parent_node
 	zone.set_meta("parent_block", parent_node)
 	zone.set_meta("sequence_ref", self)
 
-	# Override drop via script inline — attach drop handler
 	zone.mouse_filter = Control.MOUSE_FILTER_STOP
 	return zone
 
-# Dipanggil dari ChildDropZone
 func add_child_block(parent_node: BlockNode, block_id: String) -> void:
 	var node = _make_block_node(block_id)
 	parent_node.children.append(node)
 	_refresh_ui()
 
-# ── Eksekusi ──────────────────────────────────────────────────────────────
 
 func _on_run_pressed() -> void:
 	if program.is_empty() or executor.is_running:

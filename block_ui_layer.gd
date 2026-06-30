@@ -1,12 +1,9 @@
 extends CanvasLayer
 
-# block_ui_layer.gd
-# Mengontrol panel blok di sisi kiri agar tidak menutupi area permainan.
 
 @onready var sidebar: HBoxContainer = $HBoxContainer
 @onready var toggle_button: Button = $ToggleButton
 
-# Referensi ke label-label dan tombol-tombol internal untuk lokalisasi
 @onready var label_available_blocks: Label = $HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/Label
 @onready var label_move_section: Label = $HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/MoveSection/Label
 @onready var label_action_section: Label = $HBoxContainer/BlockPalette/MarginContainer/ScrollContainer/VBox/ActionSection/Label
@@ -25,7 +22,6 @@ var progress_label: Label
 var hint_label: Label
 var menu_button: Button
 
-# Ambil SettingsManager secara dinamis saat runtime untuk menghindari error parse compile-time
 @onready var settings_manager = get_node("/root/SettingsManager")
 
 func _ready() -> void:
@@ -80,7 +76,6 @@ func _update_ui_translations() -> void:
 	if menu_button:
 		menu_button.text = tr("⚙️ Menu")
 		
-	# Update label statis
 	label_available_blocks.text = tr("Available Blocks")
 	label_move_section.text = tr("🔵 Movement")
 	label_action_section.text = tr("🟢 Action")
@@ -88,23 +83,19 @@ func _update_ui_translations() -> void:
 	label_condition_section.text = tr("🟡 Condition")
 	label_block_sequence.text = tr("Block Sequence")
 	
-	# Update tombol kontrol sequence
 	run_button.text = tr("▶ Run")
 	stop_button.text = tr("⏹ Stop")
 	clear_button.text = tr("Clear All")
 	reset_map_button.text = tr("🔄 Reset Map")
 	
-	# Update teks statis di panel objektif
 	var lvl_lbl = objective_panel.find_child("LevelSelectLabel", true, false)
 	if lvl_lbl:
 		lvl_lbl.text = tr("Select Level:")
 		
-	# Refresh level items text di dropdown
 	level_select.clear()
 	for lvl in LevelData.get_all():
 		level_select.add_item(tr(lvl.title), lvl.id)
 		
-	# Cari kembali indeks level aktif agar dropdown sync
 	for i in level_select.item_count:
 		if level_select.get_item_id(i) == LevelManager.current_level_id:
 			level_select.select(i)
@@ -114,7 +105,6 @@ func _create_objective_panel() -> void:
 	objective_panel = PanelContainer.new()
 	objective_panel.name = "ObjectivePanel"
 	
-	# Set anchoring to top-right
 	objective_panel.anchor_left = 1.0
 	objective_panel.anchor_top = 0.0
 	objective_panel.anchor_right = 1.0
@@ -123,19 +113,17 @@ func _create_objective_panel() -> void:
 	objective_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	objective_panel.grow_vertical = Control.GROW_DIRECTION_END
 	
-	# Position at top right
 	objective_panel.offset_left = -320
 	objective_panel.offset_top = 16
 	objective_panel.offset_right = -16
 	
-	# Style the panel (sleek glassmorphism style)
 	var style_box = StyleBoxFlat.new()
-	style_box.bg_color = Color(0.08, 0.09, 0.12, 0.85) # Dark slate translucent
+	style_box.bg_color = Color(0.08, 0.09, 0.12, 0.85)
 	style_box.border_width_left = 2
 	style_box.border_width_top = 2
 	style_box.border_width_right = 2
 	style_box.border_width_bottom = 2
-	style_box.border_color = Color(0.24, 0.51, 0.93, 0.6) # Sleek blue border
+	style_box.border_color = Color(0.24, 0.51, 0.93, 0.6)
 	style_box.corner_radius_top_left = 8
 	style_box.corner_radius_top_right = 8
 	style_box.corner_radius_bottom_left = 8
@@ -150,7 +138,6 @@ func _create_objective_panel() -> void:
 	vbox.add_theme_constant_override("separation", 6)
 	objective_panel.add_child(vbox)
 	
-	# 1. Level Dropdown
 	var header_hbox = HBoxContainer.new()
 	header_hbox.add_theme_constant_override("separation", 8)
 	vbox.add_child(header_hbox)
@@ -174,13 +161,11 @@ func _create_objective_panel() -> void:
 	level_select.item_selected.connect(_on_level_selected)
 	header_hbox.add_child(level_select)
 	
-	# Separator line
 	var sep = ColorRect.new()
 	sep.custom_minimum_size = Vector2(0, 1)
 	sep.color = Color(0.24, 0.51, 0.93, 0.4)
 	vbox.add_child(sep)
 	
-	# 2. Description Label
 	desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD
@@ -188,19 +173,17 @@ func _create_objective_panel() -> void:
 	desc_label.add_theme_color_override("font_color", Color(0.8, 0.82, 0.86, 1.0))
 	vbox.add_child(desc_label)
 	
-	# 3. Progress Label
 	progress_label = Label.new()
 	progress_label.name = "ProgressLabel"
 	progress_label.add_theme_font_size_override("font_size", 13)
-	progress_label.add_theme_color_override("font_color", Color(0.35, 0.85, 0.45, 1.0)) # Green
+	progress_label.add_theme_color_override("font_color", Color(0.35, 0.85, 0.45, 1.0))
 	vbox.add_child(progress_label)
 	
-	# 4. Hint Label
 	hint_label = Label.new()
 	hint_label.name = "HintLabel"
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	hint_label.add_theme_font_size_override("font_size", 11)
-	hint_label.add_theme_color_override("font_color", Color(0.95, 0.8, 0.4, 0.9)) # Gold
+	hint_label.add_theme_color_override("font_color", Color(0.95, 0.8, 0.4, 0.9))
 	vbox.add_child(hint_label)
 	
 	add_child(objective_panel)
@@ -220,7 +203,6 @@ func _update_objectives_display() -> void:
 	if not level or not level_select:
 		return
 		
-	# Sync dropdown selection
 	for i in level_select.item_count:
 		if level_select.get_item_id(i) == LevelManager.current_level_id:
 			level_select.select(i)

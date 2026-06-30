@@ -5,11 +5,11 @@ class_name FarmCharacter
 
 var is_moving: bool = false
 var grid_pos: Vector2i = Vector2i(0, 0)
-var input_locked: bool = false  # true saat program blok sedang berjalan
-var is_acting: bool = false     # cegah aksi plant/water/harvest dobel
+var input_locked: bool = false
+var is_acting: bool = false
 
-signal move_finished  # dipakai oleh BlockSequence untuk await pergerakan selesai
-signal move_blocked  # dipancarkan saat robot mencoba jalan ke luar grid
+signal move_finished
+signal move_blocked
 
 func _ready():
 	var used_cells = tile_map_layer.get_used_cells()

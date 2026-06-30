@@ -9,8 +9,8 @@ var label: String = ""
 var category: Category = Category.MOVE
 var color: Color = Color.WHITE
 var block_type: BlockType = BlockType.SIMPLE
-var has_children: bool = false   # true untuk while/for/if — punya slot anak
-var condition_ids: Array = []    # untuk CONTROL_BLOCK: kondisi yang bisa dipakai
+var has_children: bool = false
+var condition_ids: Array = []
 
 static func create(p_id: String, p_label: String, p_cat: Category, p_color: Color,
 		p_type: BlockType = BlockType.SIMPLE, p_has_children: bool = false) -> BlockDefinition:
@@ -23,7 +23,6 @@ static func create(p_id: String, p_label: String, p_cat: Category, p_color: Colo
 	b.has_children = p_has_children
 	return b
 
-# Cache statis agar tidak rebuild array setiap pemanggilan
 static var _cache: Array[BlockDefinition] = []
 static var _cache_by_id: Dictionary = {}
 
@@ -31,28 +30,24 @@ static func get_all() -> Array[BlockDefinition]:
 	if not _cache.is_empty():
 		return _cache
 
-	var move    = Color(0.20, 0.47, 0.85)   # Biru
-	var action  = Color(0.18, 0.60, 0.25)   # Hijau
-	var control = Color(0.50, 0.15, 0.70)   # Ungu
-	var cond    = Color(0.75, 0.65, 0.00)   # Kuning
+	var move    = Color(0.20, 0.47, 0.85)
+	var action  = Color(0.18, 0.60, 0.25)
+	var control = Color(0.50, 0.15, 0.70)
+	var cond    = Color(0.75, 0.65, 0.00)
 
 	_cache = [
-		# Tier 1 — Gerak
 		create("north",   "North ↑",   Category.MOVE,   move),
 		create("south",   "South ↓",   Category.MOVE,   move),
 		create("west",    "West ←",    Category.MOVE,   move),
 		create("east",    "East →",    Category.MOVE,   move),
-		# Tier 1 — Aksi
 		create("plant",   "Plant 🌱",  Category.ACTION, action),
 		create("water",   "Water 💧",  Category.ACTION, action),
 		create("harvest", "Harvest 🌾",Category.ACTION, action),
-		# Tier 2 — Kontrol
 		create("for",     "for(N) { }",   Category.CONTROL,   control, BlockType.CONTROL_BLOCK, true),
 		create("while",   "while(cond){ }",Category.CONTROL,  control, BlockType.CONTROL_BLOCK, true),
 		create("if",      "if(cond){ }",  Category.CONTROL,   control, BlockType.CONTROL_BLOCK, true),
 		create("else",    "else { }",     Category.CONTROL,   control, BlockType.CONTROL_BLOCK, true),
 		create("wait",    "wait(N s)",    Category.CONTROL,   control, BlockType.SIMPLE, false),
-		# Tier 2 — Kondisi
 		create("is_planted",     "IsPlanted()",     Category.CONDITION, cond, BlockType.CONDITION),
 		create("is_watered",     "IsWatered()",     Category.CONDITION, cond, BlockType.CONDITION),
 		create("is_harvestable", "IsHarvestable()", Category.CONDITION, cond, BlockType.CONDITION),
@@ -64,7 +59,6 @@ static func get_all() -> Array[BlockDefinition]:
 		create("is_path_west",   "IsPathWest()",   Category.CONDITION, cond, BlockType.CONDITION),
 		create("is_path_east",   "IsPathEast()",   Category.CONDITION, cond, BlockType.CONDITION),
 	]
-	# Bangun index id → definisi untuk O(1) lookup
 	_cache_by_id.clear()
 	for def in _cache:
 		_cache_by_id[def.id] = def
@@ -72,7 +66,7 @@ static func get_all() -> Array[BlockDefinition]:
 
 static func get_by_id(id: String) -> BlockDefinition:
 	if _cache_by_id.is_empty():
-		get_all()  # pastikan cache terisi
+		get_all()
 	return _cache_by_id.get(id, null)
 
 static func get_by_category(cat: Category) -> Array[BlockDefinition]:

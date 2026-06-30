@@ -12,7 +12,7 @@ var title: String = ""
 var description: String = ""
 var hint: String = ""
 var conditions: Array = []
-var initial_tiles: Dictionary = {}  # Vector2i -> FarmTile.State
+var initial_tiles: Dictionary = {}
 
 static func get_all() -> Array[LevelData]:
 	return [

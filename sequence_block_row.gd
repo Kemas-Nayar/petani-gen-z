@@ -1,6 +1,5 @@
 extends HBoxContainer
 
-# Baris blok di urutan program — bisa di-drag untuk mengubah posisi.
 
 var sequence_ref: BlockSequence = null
 var block_nodes: Array[BlockNode] = []

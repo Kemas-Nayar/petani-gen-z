@@ -13,9 +13,6 @@ func _drop_data(_pos: Vector2, data: Variant) -> void:
 	var parent_block: BlockNode = get_meta("parent_block")
 	var sequence_ref = get_meta("sequence_ref")
 
-	# Jika blok berasal dari sequence (drag & drop / reorder),
-	# PINDAHKAN BlockNode yang sama — jangan buat yang baru.
-	# Ini penting agar condition_id, children, repeat_count tetap terjaga.
 	if data.get("reorder", false) and data.has("source_nodes") and data.has("source_index"):
 		var source_nodes: Array = data["source_nodes"]
 		var source_index: int = data["source_index"]
@@ -26,5 +23,4 @@ func _drop_data(_pos: Vector2, data: Variant) -> void:
 			sequence_ref._refresh_ui()
 		return
 
-	# Blok baru dari palette — buat BlockNode baru
 	sequence_ref.add_child_block(parent_block, data["block_id"])

@@ -1,7 +1,5 @@
 extends Node
 
-# settings_manager.gd
-# Add as an Autoload named "SettingsManager"
 
 const SAVE_PATH = "user://settings.cfg"
 
@@ -13,7 +11,7 @@ var settings = {
 	"sfx_volume": 0.8,
 	"fullscreen": false,
 	"resolution": "1280x720",
-	"language": "en" # Default language is English
+	"language": "en"
 }
 
 func _ready() -> void:
@@ -33,11 +31,9 @@ func setup_audio_buses() -> void:
 				AudioServer.set_bus_send(idx, "Master")
 
 func setup_translations() -> void:
-	# -------------------- TRANSLASI INDONESIA (id) --------------------
 	var t_id = Translation.new()
 	t_id.locale = "id"
 	
-	# UI Menu Utama & Umum
 	t_id.add_message("Start Game", "Mulai Bermain")
 	t_id.add_message("Settings", "Pengaturan")
 	t_id.add_message("Exit", "Keluar")
@@ -45,7 +41,6 @@ func setup_translations() -> void:
 	t_id.add_message("Back", "Kembali")
 	t_id.add_message("⚙️ Menu", "⚙️ Menu")
 	
-	# UI Pengaturan
 	t_id.add_message("SETTINGS", "PENGATURAN")
 	t_id.add_message("Master Volume", "Volume Master")
 	t_id.add_message("Music Volume", "Volume Musik")
@@ -68,7 +63,6 @@ func setup_translations() -> void:
 	t_id.add_message("Target level not reached.", "Target level tidak tercapai.")
 	t_id.add_message("Steps exceeded limit (%d/%d)!", "Langkah melebihi batas (%d/%d)!")
 	
-	# UI Game / Block UI
 	t_id.add_message("Select Level:", "Pilih Level:")
 	t_id.add_message("Block Sequence", "Urutan Blok")
 	t_id.add_message("Available Blocks", "Blok Tersedia")
@@ -80,7 +74,6 @@ func setup_translations() -> void:
 	t_id.add_message("Harvest:", "Panen:")
 	t_id.add_message("🌱 Grows in %.1f seconds", "🌱 Tumbuh dalam %.1f detik")
 	
-	# Pesan Status & Petunjuk Block Sequence
 	t_id.add_message("Condition blocks can only be inside for/while/if.", "Blok kondisi hanya bisa di dalam for/while/if.")
 	t_id.add_message("Program full!", "Program penuh!")
 	t_id.add_message("Click or drag blocks here", "Klik atau drag blok ke sini")
@@ -91,7 +84,6 @@ func setup_translations() -> void:
 	t_id.add_message("Harvest: %d/%d | Steps: %d/%d", "Panen: %d/%d | Langkah: %d/%d")
 	t_id.add_message("Harvest: %d/%d", "Panen: %d/%d")
 	
-	# Level Titles & Info
 	t_id.add_message("Level 1 — Novice Farmer", "Level 1 — Petani Pemula")
 	t_id.add_message("Harvest 1 crop to complete this level.", "Panen 1 tanaman untuk menyelesaikan level ini.")
 	t_id.add_message("Use blocks: Plant → Water → (wait) → Harvest", "Gunakan blok Plant → Water → (tunggu) → Harvest")
@@ -133,7 +125,6 @@ func setup_translations() -> void:
 	t_id.add_message("Harvest all 9 crops in maximum 60 steps!", "Panen seluruh 9 tanaman dalam maksimal 60 langkah!")
 	t_id.add_message("Write an adaptive program that handles a mix of empty, planted, and watered tiles.", "Tulis program adaptif yang menangani campuran ubin kosong, ditanam, dan disiram.")
 	
-	# Block Names (Indonesian translations of English source labels)
 	t_id.add_message("North ↑", "Utara ↑")
 	t_id.add_message("South ↓", "Selatan ↓")
 	t_id.add_message("West ←", "Barat ←")
@@ -142,13 +133,11 @@ func setup_translations() -> void:
 	t_id.add_message("Water 💧", "Siram 💧")
 	t_id.add_message("Harvest 🌾", "Panen 🌾")
 	
-	# Categories (Indonesian)
 	t_id.add_message("🔵 Movement", "🔵 Gerak")
 	t_id.add_message("🟢 Action", "🟢 Aksi")
 	t_id.add_message("🟣 Control", "🟣 Kontrol")
 	t_id.add_message("🟡 Condition", "🟡 Kondisi")
 	
-	# Keyword Kontrol & Kondisi (Indonesian)
 	t_id.add_message("for", "untuk")
 	t_id.add_message("while", "selama")
 	t_id.add_message("if", "jika")
@@ -167,7 +156,6 @@ func setup_translations() -> void:
 	t_id.add_message("IsPathWest()", "AdaJalanBarat()")
 	t_id.add_message("IsPathEast()", "AdaJalanTimur()")
 	
-	# Popups (Indonesian)
 	t_id.add_message("🎉 Level Complete!\n%s", "🎉 Level Selesai!\n%s")
 	t_id.add_message("Harvested: %d crops\nSteps: %d blocks executed", "Panen: %d tanaman\nLangkah: %d blok dieksekusi")
 	t_id.add_message("Next Level ▶", "Level Berikutnya ▶")
@@ -213,7 +201,6 @@ func apply_settings() -> void:
 			var w = int(parts[0])
 			var h = int(parts[1])
 			DisplayServer.window_set_size(Vector2i(w, h))
-			# Center window
 			var screen = DisplayServer.window_get_current_screen()
 			var screen_size = DisplayServer.screen_get_size(screen)
 			DisplayServer.window_set_position(screen_size / 2 - Vector2i(w, h) / 2)

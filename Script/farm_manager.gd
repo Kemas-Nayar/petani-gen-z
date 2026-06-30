@@ -1,16 +1,13 @@
 extends Node
 
-# Add this as an Autoload in Project > Project Settings > Autoload
-# Name it "FarmManager"
 
-const GROWTH_TIME: float = 2.0  # Seconds for watered crop to become harvestable
+const GROWTH_TIME: float = 2.0
 
-var tiles: Dictionary = {}  # Vector2i -> FarmTile
+var tiles: Dictionary = {}
 
 signal tile_state_changed(grid_pos: Vector2i, new_state: FarmTile.State)
 signal growth_finished(grid_pos: Vector2i)
 
-# --- Public API (callable from scripts and later from visual block system) ---
 
 func plant(grid_pos: Vector2i) -> bool:
 	var tile = _get_or_create_tile(grid_pos)
@@ -24,7 +21,6 @@ func water(grid_pos: Vector2i) -> bool:
 	var success = tile.water()
 	if success:
 		tile_state_changed.emit(grid_pos, tile.state)
-		# Start growth timer — watered -> harvestable after GROWTH_TIME seconds
 		var timer = get_tree().create_timer(GROWTH_TIME)
 		timer.timeout.connect(_on_growth_complete.bind(grid_pos))
 	return success
@@ -60,10 +56,8 @@ func wait_for_growth(grid_pos: Vector2i, should_continue: Callable = Callable())
 		if finished_pos == grid_pos:
 			return
 
-# --- Public Reset ---
 
 func reset_map() -> void:
-	# Reset semua tile ke EMPTY dan update visual
 	for pos in tiles.keys():
 		tile_state_changed.emit(pos, FarmTile.State.EMPTY)
 	tiles.clear()
@@ -76,7 +70,6 @@ func set_tile_state(grid_pos: Vector2i, state: FarmTile.State) -> void:
 		var timer = get_tree().create_timer(GROWTH_TIME)
 		timer.timeout.connect(_on_growth_complete.bind(grid_pos))
 
-# --- Internal ---
 
 func _get_or_create_tile(grid_pos: Vector2i) -> FarmTile:
 	if not tiles.has(grid_pos):
@@ -89,7 +82,6 @@ func _on_growth_complete(grid_pos: Vector2i) -> void:
 	if not tiles.has(grid_pos):
 		return
 	var tile = tiles[grid_pos]
-	# Only advance if still watered (player may have already harvested or reset)
 	if tile.state == FarmTile.State.WATERED:
 		tile.state = FarmTile.State.HARVESTABLE
 		print("Crop ready to harvest at ", grid_pos)

@@ -1,11 +1,8 @@
 extends Node
 class_name BlockExecutor
 
-# BlockExecutor.gd
-# Engine eksekusi rekursif untuk program blok visual.
-# Mendukung: simple blocks, for(N), while(cond), if(cond)
 
-const MAX_ITERATIONS = 100  # Batas loop untuk mencegah infinite loop
+const MAX_ITERATIONS = 100
 
 signal execution_started
 signal execution_finished
@@ -17,7 +14,6 @@ var is_running: bool = false
 func _init(p_character: FarmCharacter) -> void:
 	character = p_character
 
-# Jalankan list BlockNode secara berurutan
 func execute(program: Array[BlockNode]) -> void:
 	if is_running:
 		return

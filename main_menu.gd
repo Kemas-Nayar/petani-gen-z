@@ -4,35 +4,28 @@ extends Control
 @onready var settings_button: TextureButton = $CenterContainer/VBox/Buttons/SettingsButton
 @onready var quit_button: TextureButton = $CenterContainer/VBox/Buttons/QuitButton
 
-# Ambil SettingsManager secara dinamis saat runtime untuk menghindari error parse compile-time
 @onready var settings_manager = get_node("/root/SettingsManager")
 
 var settings_scene = preload("res://settings_menu.tscn")
 
 func _ready() -> void:
-	# Menghubungkan signal tombol
 	play_button.pressed.connect(_on_play_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 	
-	# Menghubungkan signal lokalisasi
 	settings_manager.settings_changed.connect(_update_locale_texts)
 	
-	# Mengatur efek interaktif pada tombol-tombol
 	_setup_button_effects(play_button)
 	_setup_button_effects(settings_button)
 	_setup_button_effects(quit_button)
 	
-	# Update label dan tombol sesuai bahasa terpilih
 	_update_locale_texts()
 	
-	# Animasi masuk (fade in) untuk seluruh menu utama saat dimulai
 	modulate.a = 0.0
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, 0.4)
 
 func _update_locale_texts() -> void:
-	# Tekstur tombol sudah memiliki teks terintegrasi ("START", "SETTINGS", "EXIT")
 	pass
 
 func _setup_button_effects(btn: TextureButton) -> void:

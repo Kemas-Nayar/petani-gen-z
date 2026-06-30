@@ -14,7 +14,6 @@ func _ready() -> void:
 	next_button.pressed.connect(_on_next_pressed)
 	retry_button.pressed.connect(_on_retry_pressed)
 	
-	# Menerapkan lokalisasi untuk tombol
 	next_button.text = tr("Next Level ▶")
 	retry_button.text = tr("Retry 🔄")
 
@@ -39,7 +38,6 @@ func _on_level_failed(level_id: int) -> void:
 	
 	title_label.text = tr("❌ Level Failed!\n%s") % tr(level.title)
 	
-	# Tentukan penyebab kegagalan
 	var reason = tr("Target level not reached.")
 	var max_steps := -1
 	for c in level.conditions:

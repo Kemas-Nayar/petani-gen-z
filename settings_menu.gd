@@ -21,24 +21,21 @@ extends CanvasLayer
 @onready var apply_button: Button = $Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Buttons/ApplyButton
 @onready var close_button: Button = $Overlay/CenterContainer/PanelContainer/MarginContainer/VBox/Buttons/CloseButton
 
-# Ambil SettingsManager secara dinamis saat runtime untuk menghindari error parse compile-time
 @onready var settings_manager = get_node("/root/SettingsManager")
 
 var resolutions = ["1280x720", "1366x768", "1600x900", "1920x1080"]
 var local_settings = {}
 
 func _ready() -> void:
-	# Duplikasi pengaturan ke variabel lokal agar perubahan bersifat sementara sebelum di-apply
 	local_settings = settings_manager.settings.duplicate()
 
-	# Styling panel secara dinamis untuk memberikan kesan glassmorphism premium
 	var style_box = StyleBoxFlat.new()
-	style_box.bg_color = Color(0.08, 0.09, 0.12, 0.92) # Dark navy translucent
+	style_box.bg_color = Color(0.08, 0.09, 0.12, 0.92)
 	style_box.border_width_left = 2
 	style_box.border_width_top = 2
 	style_box.border_width_right = 2
 	style_box.border_width_bottom = 2
-	style_box.border_color = Color(0.0, 0.75, 1.0, 0.65) # Neon Cyan
+	style_box.border_color = Color(0.0, 0.75, 1.0, 0.65)
 	style_box.corner_radius_top_left = 12
 	style_box.corner_radius_top_right = 12
 	style_box.corner_radius_bottom_left = 12
@@ -49,7 +46,6 @@ func _ready() -> void:
 	style_box.content_margin_bottom = 16
 	panel_container.add_theme_stylebox_override("panel", style_box)
 	
-	# Hubungkan signal
 	settings_manager.settings_changed.connect(_on_settings_changed)
 	
 	master_slider.value_changed.connect(_on_master_slider_changed)
@@ -63,23 +59,19 @@ func _ready() -> void:
 	apply_button.pressed.connect(_on_apply_pressed)
 	close_button.pressed.connect(_on_close_pressed)
 	
-	# Inisialisasi data resolusi
 	resolution_option.clear()
 	for res in resolutions:
 		resolution_option.add_item(res)
 		
-	# Inisialisasi data bahasa
 	language_option.clear()
 	language_option.add_item("Bahasa Indonesia", 0)
 	language_option.set_item_metadata(0, "id")
 	language_option.add_item("English", 1)
 	language_option.set_item_metadata(1, "en")
 	
-	# Muat nilai dari settings_manager
 	_load_ui_values()
 	_update_texts()
 	
-	# Sembunyikan semua pengaturan kecuali bahasa
 	master_label.visible = false
 	master_slider.visible = false
 	music_label.visible = false
@@ -97,12 +89,10 @@ func _load_ui_values() -> void:
 	sfx_slider.value = local_settings.sfx_volume
 	fullscreen_check.button_pressed = local_settings.fullscreen
 	
-	# Pilih resolusi
 	var res_idx = resolutions.find(local_settings.resolution)
 	if res_idx != -1:
 		resolution_option.selected = res_idx
 		
-	# Pilih bahasa
 	if local_settings.language == "en":
 		language_option.selected = 1
 	else:
@@ -143,7 +133,6 @@ func _on_language_selected(index: int) -> void:
 	local_settings.language = lang
 
 func _on_apply_pressed() -> void:
-	# Salin pengaturan lokal ke SettingsManager dan simpan secara permanen
 	for key in local_settings.keys():
 		settings_manager.settings[key] = local_settings[key]
 	settings_manager.save_settings()
@@ -167,23 +156,22 @@ func _show_unsaved_changes_dialog() -> void:
 	confirm.get_ok_button().text = tr("Simpan")
 	confirm.get_cancel_button().text = tr("Batal")
 	
-	# Tambahkan tombol "Jangan Simpan" (Discard)
 	var discard_btn = confirm.add_button(tr("Jangan Simpan"), true, "discard")
 	
 	confirm.confirmed.connect(func():
-		_on_apply_pressed() # Terapkan perubahan
+		_on_apply_pressed()
 		confirm.queue_free()
-		_close_panel() # Tutup
+		_close_panel()
 	)
 	
 	confirm.custom_action.connect(func(action):
 		if action == "discard":
 			confirm.queue_free()
-			_close_panel() # Tutup tanpa menyimpan
+			_close_panel()
 	)
 	
 	confirm.canceled.connect(func():
-		confirm.queue_free() # Tutup dialog konfirmasi, biarkan menu setting tetap terbuka
+		confirm.queue_free()
 	)
 	
 	add_child(confirm)
