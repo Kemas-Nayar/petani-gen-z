@@ -14,8 +14,7 @@
 [ext_resource type="Script" uid="uid://7wcy7o6b8k6w" path="res://block_sequence.gd" id="12_0h7mo"]
 [ext_resource type="Script" uid="uid://2ytufs1legsv" path="res://block_ui_layer.gd" id="13_layer"]
 [ext_resource type="Script" uid="uid://d1if7ymnkfcf5" path="res://win_popup.gd" id="14_popup"]
-[ext_resource type="Texture2D" path="res://background.jpg" id="15_bg"]
-
+[ext_resource type="Texture2D" uid="uid://u8hf8p726rc" path="res://background.jpg" id="15_bg"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_kdubu"]
 texture = ExtResource("1_q6r6c")
@@ -66,10 +65,10 @@ sources/13 = SubResource("TileSetAtlasSource_d2bti")
 
 [node name="Node2D" type="Node2D" unique_id=1473681432]
 
-[node name="BackgroundCanvas" type="CanvasLayer" parent="."]
+[node name="BackgroundCanvas" type="CanvasLayer" parent="." unique_id=1669823259]
 layer = -100
 
-[node name="TextureRect" type="TextureRect" parent="BackgroundCanvas"]
+[node name="TextureRect" type="TextureRect" parent="BackgroundCanvas" unique_id=1954553581]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -273,6 +272,7 @@ text = "🔄 Reset Map"
 [node name="BlockUI_HBoxContainer_BlockPalette_MarginContainer_VBox#ControlSection" type="VBoxContainer" parent="." unique_id=1279330468]
 
 [node name="BlockUI_HBoxContainer_BlockPalette_MarginContainer_VBox_ControlSection#Label" type="Label" parent="." unique_id=1858132629]
+visible = false
 text = "🟣 Kontrol"
 
 [node name="BlockUI_HBoxContainer_BlockPalette_MarginContainer_VBox_ControlSection#Blocks" type="VBoxContainer" parent="." unique_id=752662732]
